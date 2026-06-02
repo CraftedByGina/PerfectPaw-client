@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
-import { AGE_GROUPS, SIZES, AGE_GROUP_MAP } from '../data/pets.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE_URL = import.meta.env.DEV ? '' : RAW_API_BASE_URL
+
+const joinUrl = (base, path) => {
+  const cleanBase = String(base || '').replace(/\/+$/, '')
+  const cleanPath = String(path || '').replace(/^\/+/, '')
+  return `${cleanBase}/${cleanPath}`
+}
 
 const readApiError = async (response) => {
   try {
@@ -16,7 +22,7 @@ const readApiError = async (response) => {
 }
 
 const fetchPets = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/pets`)
+  const response = await fetch(joinUrl(API_BASE_URL, '/api/pets'))
   if (!response.ok) {
     throw new Error(await readApiError(response))
   }
@@ -25,13 +31,18 @@ const fetchPets = async () => {
   return Array.isArray(data) ? data : data?.pets || data?.data || []
 }
 
-const createApplication = async ({ petId, message, userId }) => {
-  const response = await fetch(`${API_BASE_URL}/api/applications`, {
+const createApplication = async ({ petId, message, token }) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  const response = await fetch(joinUrl(API_BASE_URL, '/api/applications'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-user-id': userId,
-    },
+    headers,
     body: JSON.stringify({ petId, message }),
   })
 
@@ -51,17 +62,81 @@ const getPetAge = (pet) => Number(pet.age || 0)
 const getPetAgeGroup = (pet) => pet.ageGroup || 'Adult'
 const getPetSize = (pet) => pet.size || 'Medium'
 
+const AGE_GROUP_ORDER = ['Puppy', 'Young', 'Adult', 'Senior']
+const AGE_GROUP_LABELS = {
+  Puppy: 'Puppy (< 1 yr)',
+  Young: 'Young (1-3 yrs)',
+  Adult: 'Adult (3-7 yrs)',
+  Senior: 'Senior (7+ yrs)',
+}
+const SIZE_ORDER = ['Small', 'Medium', 'Large']
+
+const getFilterAgeGroup = (label) => {
+  const normalized = String(label || '').trim().toLowerCase()
+  if (normalized.startsWith('puppy')) return 'Puppy'
+  if (normalized.startsWith('young')) return 'Young'
+  if (normalized.startsWith('adult')) return 'Adult'
+  if (normalized.startsWith('senior')) return 'Senior'
+  return ''
+}
+
+const getPetSpecies = (pet) => {
+  const rawSpecies = String(pet.species || pet.type || '').trim().toLowerCase()
+  if (rawSpecies === 'dog') return 'Dog'
+  if (rawSpecies === 'cat') return 'Cat'
+
+  const image = String(getPetImage(pet)).toLowerCase()
+  if (image.includes('cat')) return 'Cat'
+  return 'Dog'
+}
+
+const getNormalizedPetAgeGroup = (pet) => {
+  const rawAgeGroup = String(getPetAgeGroup(pet) || '').trim().toLowerCase()
+  const age = getPetAge(pet)
+
+  if (rawAgeGroup === 'puppy' || rawAgeGroup === 'young' || rawAgeGroup === 'adult' || rawAgeGroup === 'senior') {
+    return rawAgeGroup.charAt(0).toUpperCase() + rawAgeGroup.slice(1)
+  }
+
+  if (!Number.isNaN(age)) {
+    if (age < 1) return 'Puppy'
+    if (age < 3) return 'Young'
+    if (age < 8) return 'Adult'
+    return 'Senior'
+  }
+
+  return 'Adult'
+}
+
 const Pets = () => {
-  const { userId } = useAuth()
+  const { token, isAuthenticated, isShelterAdmin } = useAuth()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [ages, setAges] = useState([])
   const [sizes, setSizes] = useState([])
+  const [species, setSpecies] = useState([])
   const [pets, setPets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [submittingPetId, setSubmittingPetId] = useState('')
+
+  const ageFilterOptions = useMemo(() => {
+    const available = new Set(pets.map(getNormalizedPetAgeGroup))
+    return AGE_GROUP_ORDER.filter(group => available.has(group)).map(group => AGE_GROUP_LABELS[group])
+  }, [pets])
+
+  const sizeFilterOptions = useMemo(() => {
+    const available = new Set(pets.map(pet => getPetSize(pet)))
+    const knownSizes = SIZE_ORDER.filter(size => available.has(size))
+    const otherSizes = [...available].filter(size => !SIZE_ORDER.includes(size)).sort()
+    return [...knownSizes, ...otherSizes]
+  }, [pets])
+
+  const speciesFilterOptions = useMemo(() => {
+    const available = new Set(pets.map(getPetSpecies))
+    return ['Dog', 'Cat'].filter(kind => available.has(kind))
+  }, [pets])
 
   useEffect(() => {
     const loadPets = async () => {
@@ -87,21 +162,28 @@ const Pets = () => {
 
   const filtered = useMemo(() => pets.filter(pet => {
     const name = getPetName(pet)
-    const ageGroup = getPetAgeGroup(pet)
+    const ageGroup = getNormalizedPetAgeGroup(pet)
     const size = getPetSize(pet)
+    const petSpecies = getPetSpecies(pet)
 
     const matchesSearch = name.toLowerCase().includes(search.toLowerCase())
-    const matchesAge = ages.length === 0 || ages.some(a => AGE_GROUP_MAP[a] === ageGroup)
+    const matchesAge = ages.length === 0 || ages.some(a => getFilterAgeGroup(a) === ageGroup)
     const matchesSize = sizes.length === 0 || sizes.includes(size)
-    return matchesSearch && matchesAge && matchesSize
-  }), [pets, search, ages, sizes])
+    const matchesSpecies = species.length === 0 || species.includes(petSpecies)
+    return matchesSearch && matchesAge && matchesSize && matchesSpecies
+  }), [pets, search, ages, sizes, species])
 
   const handleApply = async (pet) => {
     const petId = getPetId(pet)
     const petName = getPetName(pet)
 
-    if (!userId) {
-      setNotice('Please enter a user id in the header before submitting an application.')
+    if (!isAuthenticated) {
+      setNotice('Please sign in as an adopter before submitting an application.')
+      return
+    }
+
+    if (isShelterAdmin) {
+      setNotice('Shelter accounts cannot submit adoption applications. Use an adopter account.')
       return
     }
 
@@ -112,7 +194,7 @@ const Pets = () => {
       const response = await createApplication({
         petId,
         message: `Hi! I am interested in adopting ${petName}.`,
-        userId,
+        token,
       })
 
       const applicationId = response?.data?._id || response?.data?.id
@@ -177,7 +259,7 @@ const Pets = () => {
             <div className="mt-[26px] flex items-baseline justify-between gap-2.5">
               <h2 className="m-0 font-serif text-[26px] text-[#0F2A44]">Filters</h2>
               <button
-                onClick={() => { setAges([]); setSizes([]) }}
+                onClick={() => { setAges([]); setSizes([]); setSpecies([]) }}
                 className="border-0 bg-transparent text-[#6c6d72] text-base cursor-pointer"
               >
                 Reset
@@ -188,7 +270,7 @@ const Pets = () => {
             {/* Age filter */}
             <div>
               <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Age</h3>
-              {AGE_GROUPS.map(group => (
+              {ageFilterOptions.map(group => (
                 <label key={group} className="flex items-center gap-3 my-2.5 text-lg text-[#2f3034] cursor-pointer">
                   <input
                     type="checkbox"
@@ -203,10 +285,28 @@ const Pets = () => {
 
             <div className="h-px bg-[#d7d7d9] my-3.5" aria-hidden="true" />
 
+        
+            <div>
+              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Species</h3>
+              {speciesFilterOptions.map(kind => (
+                <label key={kind} className="flex items-center gap-3 my-2.5 text-lg text-[#2f3034] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={species.includes(kind)}
+                    onChange={() => toggleFilter(species, setSpecies, kind)}
+                    className="w-5 h-5 accent-[#2f3034]"
+                  />
+                  <span>{kind}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="h-px bg-[#d7d7d9] my-3.5" aria-hidden="true" />
+
             {/* Size filter */}
             <div>
               <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Size</h3>
-              {SIZES.map(size => (
+              {sizeFilterOptions.map(size => (
                 <label key={size} className="flex items-center gap-3 my-2.5 text-lg text-[#2f3034] cursor-pointer">
                   <input
                     type="checkbox"
@@ -224,9 +324,9 @@ const Pets = () => {
           <section className="flex-1 flex flex-wrap gap-7 pt-1" aria-label="Pets list">
             {loading && <p className="text-[#67686d] text-lg">Loading pets...</p>}
             {!loading && error && <p className="text-[#b42318] text-lg">{error}</p>}
-            {!userId && !loading && !error && (
+            {!isAuthenticated && !loading && !error && (
               <p className="w-full rounded-lg border border-[#f3d3a6] bg-[#fff7eb] p-3 text-[#7a5208] text-sm">
-                You are not logged in. Add your user id in the header so we can send x-user-id.
+                Sign in as an adopter to submit an application.
               </p>
             )}
             {notice && (
@@ -259,7 +359,6 @@ const Pets = () => {
                       <span key={t} className="animate-tag-pop px-2.5 py-[7px] rounded-lg bg-[#ededee] text-[#6c6d72] text-sm" style={{ animationDelay: `${0.1 + ti * 0.07}s` }}>{t}</span>
                     ))}
                   </div>
-                  <p className="mb-3 mt-0 text-sm text-[#6c6d72]">Course status: Course pending</p>
                   <button
                     type="button"
                     onClick={() => handleApply(pet)}

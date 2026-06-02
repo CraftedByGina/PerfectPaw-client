@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useAuth } from '../context/AuthContext.jsx'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE_URL = (import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL || '')).replace(/\/$/, '')
 
 const readApiError = async (response) => {
 	try {
@@ -13,13 +13,18 @@ const readApiError = async (response) => {
 	}
 }
 
-const submitCourseQuiz = async ({ applicationId, userId, answers }) => {
+const submitCourseQuiz = async ({ applicationId, token, answers }) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
 	const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/course`, {
 		method: 'PATCH',
-		headers: {
-			'Content-Type': 'application/json',
-			'x-user-id': userId,
-		},
+		headers,
 		body: JSON.stringify({ answers }),
 	})
 
@@ -139,7 +144,7 @@ const QUIZ = [
 ]
 
 const Course = () => {
-	const { userId } = useAuth()
+	const { token, isAuthenticated } = useAuth()
 	const [searchParams] = useSearchParams()
 	const [pageIndex, setPageIndex] = useState(0)
 	const [answers, setAnswers] = useState({})
@@ -178,7 +183,7 @@ const Course = () => {
 		setSaveError('')
 		setSaveMessage('')
 
-		if (!userId) {
+		if (!isAuthenticated) {
 			setSaveError('You need to be logged in before sending course results.')
 			return
 		}
@@ -194,7 +199,7 @@ const Course = () => {
 			const orderedAnswers = QUIZ.map((_, index) => answers[index])
 			const response = await submitCourseQuiz({
 				applicationId,
-				userId,
+				token,
 				answers: orderedAnswers,
 			})
 

@@ -117,7 +117,7 @@ const Home = () => {
           </h2>
           <div className="flex flex-wrap gap-6 text-center max-lg:gap-y-11 max-sm:flex-col">
             {[
-              { num: '01', title: 'Browse Dogs', desc: 'Find a dog that matches you!' },
+              { num: '01', title: 'Browse Cats and Dogs', desc: 'Find a dog or cat that matches you!' },
               { num: '02', title: 'Take Course', desc: 'Complete our short adoption education course.' },
               { num: '03', title: 'Apply', desc: 'Submit your application for review.' },
               { num: '04', title: 'Meet & Greet', desc: 'Meet your potential new family member.' },
