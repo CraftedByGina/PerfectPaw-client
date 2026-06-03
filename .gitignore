@@ -15,6 +15,11 @@ dist
 dist-ssr
 *.local
 
+# Backups 
+*.tar.gz
+*.zip
+*-backup-*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

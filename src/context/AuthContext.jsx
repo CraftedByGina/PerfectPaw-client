@@ -13,8 +13,6 @@ const EMPTY_SESSION = {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const LOGIN_PATH = import.meta.env.VITE_AUTH_LOGIN_PATH || '/api/auth/login'
 const REGISTER_PATH = import.meta.env.VITE_AUTH_REGISTER_PATH || '/api/auth/register'
-const OAUTH_LOGIN_PATH = import.meta.env.VITE_OAUTH_LOGIN_PATH || '/login'
-const OAUTH_SIGNUP_PATH = import.meta.env.VITE_OAUTH_SIGNUP_PATH || '/signup'
 
 const stripTrailingSlashes = (value) => String(value || '').replace(/\/+$/, '')
 const stripLeadingSlashes = (value) => String(value || '').replace(/^\/+/, '')
@@ -122,29 +120,41 @@ export const AuthProvider = ({ children }) => {
   }
 
   const startOAuthLogin = (intent = 'login') => {
-    const path = intent === 'signup' ? OAUTH_SIGNUP_PATH : OAUTH_LOGIN_PATH
+    const path = intent === 'signup' ? '/oauth/signup' : '/oauth/login'
     window.location.href = joinUrl(API_BASE_URL, path)
   }
 
   const finishOAuthLoginFromCallback = async () => {
-    if (token) {
-      return {
-        token,
-        role,
-        userId,
-        shelterId,
-        user,
+    const urlParams = new URLSearchParams(window.location.search)
+    const googleToken = urlParams.get('token')
+
+    if (!googleToken) {
+      if (token) {
+        return { token, role, userId, shelterId, user }
       }
+      throw new Error('No token was returned from Google sign-in.')
     }
 
-    return {
-      token: '',
-      role: '',
-      userId: '',
+    const middlePart = googleToken.split('.')[1]
+    const tokenInfo = JSON.parse(atob(middlePart))
+
+    const nextSession = {
+      token: googleToken,
+      role: normalizeRole(tokenInfo.role),
+      userId: tokenInfo.sub || '',
       shelterId: '',
-      user: null,
-      needsJwt: true,
+      user: {
+        _id: tokenInfo.sub,
+        email: tokenInfo.email,
+        role: tokenInfo.role,
+      },
     }
+
+    setActiveSession(nextSession)
+
+    window.history.replaceState({}, document.title, window.location.pathname)
+
+    return nextSession
   }
 
   const login = async ({ email, password }) => {
