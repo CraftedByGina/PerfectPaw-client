@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useAuth } from '../context/AuthContext.jsx'
+import ApplicationForm from './ApplicationForm.jsx'
 
 const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const API_BASE_URL = import.meta.env.DEV ? '' : RAW_API_BASE_URL
@@ -29,28 +30,6 @@ const fetchPets = async () => {
 
   const data = await response.json()
   return Array.isArray(data) ? data : data?.pets || data?.data || []
-}
-
-const createApplication = async ({ petId, message, token }) => {
-  const headers = {
-    'Content-Type': 'application/json',
-  }
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
-
-  const response = await fetch(joinUrl(API_BASE_URL, '/api/applications'), {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ petId, message }),
-  })
-
-  if (!response.ok) {
-    throw new Error(await readApiError(response))
-  }
-
-  return response.json()
 }
 
 const getPetId = (pet) => pet.id || pet._id || pet.petId || pet.name
@@ -119,7 +98,8 @@ const Pets = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [submittingPetId, setSubmittingPetId] = useState('')
+  const [selectedPet, setSelectedPet] = useState(null)
+
 
   const ageFilterOptions = useMemo(() => {
     const available = new Set(pets.map(getNormalizedPetAgeGroup))
@@ -174,9 +154,6 @@ const Pets = () => {
   }), [pets, search, ages, sizes, species])
 
   const handleApply = async (pet) => {
-    const petId = getPetId(pet)
-    const petName = getPetName(pet)
-
     if (!isAuthenticated) {
       setNotice('Please sign in as an adopter before submitting an application.')
       return
@@ -186,30 +163,9 @@ const Pets = () => {
       setNotice('Shelter accounts cannot submit adoption applications. Use an adopter account.')
       return
     }
-
-    setSubmittingPetId(petId)
     setNotice('')
+    setSelectedPet(pet)
 
-    try {
-      const response = await createApplication({
-        petId,
-        message: `Hi! I am interested in adopting ${petName}.`,
-        token,
-      })
-
-      const applicationId = response?.data?._id || response?.data?.id
-
-      if (applicationId) {
-        navigate(`/course?applicationId=${applicationId}`)
-        return
-      }
-
-      setNotice(`Application sent for ${petName}.`) 
-    } catch (err) {
-      setNotice(err.message || 'Could not submit application.')
-    } finally {
-      setSubmittingPetId('')
-    }
   }
 
   return (
@@ -243,7 +199,7 @@ const Pets = () => {
             {/* Search */}
             <label className="relative block">
               <svg className="absolute top-1/2 left-3.5 -translate-y-1/2 w-[18px] h-[18px] opacity-60 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
               <input
                 type="search"
@@ -285,7 +241,7 @@ const Pets = () => {
 
             <div className="h-px bg-[#d7d7d9] my-3.5" aria-hidden="true" />
 
-        
+
             <div>
               <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Species</h3>
               {speciesFilterOptions.map(kind => (
@@ -319,7 +275,6 @@ const Pets = () => {
               ))}
             </div>
           </aside>
-
           {/* Pet cards */}
           <section className="flex-1 flex flex-wrap gap-7 pt-1" aria-label="Pets list">
             {loading && <p className="text-[#67686d] text-lg">Loading pets...</p>}
@@ -362,12 +317,10 @@ const Pets = () => {
                   <button
                     type="button"
                     onClick={() => handleApply(pet)}
-                    disabled={submittingPetId === getPetId(pet)}
+                    disabled={selectedPet && getPetId(selectedPet) === getPetId(pet)}
                     className="block w-full text-center rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] text-[#2f3034] py-[10px] text-base font-semibold no-underline"
                   >
-                    {submittingPetId === getPetId(pet)
-                      ? 'Sending...'
-                      : `I'm interested in ${getPetName(pet)}!`}
+                    {`I'm interested in ${getPetName(pet)}!`}
                   </button>
                 </div>
               </article>
@@ -376,6 +329,25 @@ const Pets = () => {
 
         </div>
       </section>
+      {selectedPet && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8"
+          aria-modal="true"
+          aria-label={`Application for ${getPetName(selectedPet)}`}
+        >
+          <div className="max-h-[calc(100vh-64px)] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-[#d7d7d9] bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:p-8">
+            <ApplicationForm
+              pet={selectedPet}
+              token={token}
+              onCancel={() => setSelectedPet(null)}
+              onSubmitted={(applicationId) => {
+                setSelectedPet(null)
+                navigate(`/course?applicationId=${applicationId}`)
+              }}
+            />
+          </div>
+        </div>
+      )}
     </>
   )
 }

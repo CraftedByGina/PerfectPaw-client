@@ -54,10 +54,10 @@ const Signup = () => {
   return (
     <section className="w-[min(760px,calc(100%-32px))] mx-auto py-12">
       <div className="rounded-[16px] border border-[#d7d7d9] bg-white p-6 sm:p-8">
-        <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Account setup</p>
-        <h1 className="mt-3 mb-0 font-serif text-[42px] leading-[1.1] text-[#0F2A44]">Create account</h1>
+        <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Account Setup</p>
+        <h1 className="mt-3 mb-0 font-serif text-[42px] leading-[1.1] text-[#0F2A44]">Create Your Account</h1>
         <p className="mt-3 mb-0 text-[#55585f] text-[16px] leading-[1.7]">
-          You can create an account with Google or with email and password.
+          You can create an account with Google or using the form below.
         </p>
 
         <button
@@ -69,7 +69,7 @@ const Signup = () => {
         </button>
 
         <p className="mt-3 mb-0 text-center text-xs text-[#67686d]">
-          or create an account with email and password
+          or create an account with the form below
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 grid gap-3">
@@ -126,7 +126,7 @@ const Signup = () => {
             disabled={saving}
             className="mt-2 rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-5 py-2.5 text-base font-semibold text-[#2f3034]"
           >
-            {saving ? 'Creating account...' : 'Create account'}
+            {saving ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
@@ -143,7 +143,7 @@ const Signup = () => {
         )}
 
         <p className="mt-6 mb-0 text-sm text-[#67686d]">
-          Already have an account? <Link to="/login" className="text-red-500">Sign in</Link>
+          Already have an account? <Link to="/login" className="text-red-500 font-bold">Sign In</Link>
         </p>
       </div>
     </section>

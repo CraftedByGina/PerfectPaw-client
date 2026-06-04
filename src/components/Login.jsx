@@ -99,7 +99,7 @@ const Login = () => {
         )}
 
         <p className="mt-5 mb-0 text-sm text-[#67686d]">
-          Need an account? <Link to="/signup" className="text-red-500">Create one</Link>
+          Need an account? <Link to="/signup" className="text-red-500 font-bold">Register here</Link>
         </p>
       </div>
     </section>

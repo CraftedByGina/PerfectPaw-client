@@ -13,7 +13,7 @@ const readApiError = async (response) => {
 	}
 }
 
-const submitCourseQuiz = async ({ applicationId, token, answers }) => {
+const submitCourseQuiz = async ({ applicationId, token, answers, courseStatus }) => {
   const headers = {
     'Content-Type': 'application/json',
   }
@@ -25,7 +25,7 @@ const submitCourseQuiz = async ({ applicationId, token, answers }) => {
 	const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/course`, {
 		method: 'PATCH',
 		headers,
-		body: JSON.stringify({ answers }),
+		body: JSON.stringify({ courseStatus }),
 	})
 
 	if (!response.ok) {
@@ -182,6 +182,7 @@ const Course = () => {
 		setSubmitted(true)
 		setSaveError('')
 		setSaveMessage('')
+		const courseStatus = passed ? "passed" : "failed";
 
 		if (!isAuthenticated) {
 			setSaveError('You need to be logged in before sending course results.')
@@ -201,11 +202,12 @@ const Course = () => {
 				applicationId,
 				token,
 				answers: orderedAnswers,
+				courseStatus,
 			})
 
-			const courseStatus = response?.data?.courseStatus
-			if (courseStatus) {
-				setSaveMessage(`Course result saved: ${courseStatus}.`)
+			const savedCourseStatus = response?.data?.courseStatus
+			if (savedCourseStatus) {
+				setSaveMessage(`Course result saved: ${savedCourseStatus}.`)
 			} else {
 				setSaveMessage('Course result saved.')
 			}
