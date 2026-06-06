@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes,useLocation } from 'react-router'
 import Header from './shared/Header.jsx'
 import Footer from './shared/Footer.jsx'
 import Home from './components/Home.jsx'
@@ -49,10 +49,13 @@ const RequireShelterAdmin = ({ children }) => {
   return children
 }
 
-const App = () => {
+
+const AppContent = () => {
+  const location = useLocation()
+  const hideSharedLayout = location.pathname.startsWith('/dashboard')
   return (
-    <BrowserRouter>
-      <Header />
+    <>
+      {!hideSharedLayout && <Header />}
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -86,9 +89,15 @@ const App = () => {
           />
         </Routes>
       </main>
-      <Footer />
+      {!hideSharedLayout && <Footer />}
+    </>
+  )
+}
+const App = () => {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   )
 }
-
 export default App
