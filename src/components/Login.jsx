@@ -18,8 +18,16 @@ const Login = () => {
 
     try {
       const session = await login({ email: email.trim(), password })
-      const isShelterRole = ['shelter_admin', 'super_admin'].includes(session.role)
-      navigate(isShelterRole ? '/dashboard' : '/pets', { replace: true })
+      if (session.role === 'super_admin') {
+        navigate('/super-admin', { replace: true })
+        return
+      }
+      if (session.role === 'shelter_admin') {
+        navigate('/dashboard', { replace: true })
+        return
+      }
+      navigate('/pets', { replace: true })
+
     } catch (err) {
       setError(err.message || 'Could not sign in right now.')
     } finally {

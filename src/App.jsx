@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Navigate, Route, Routes,useLocation } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import Header from './shared/Header.jsx'
 import Footer from './shared/Footer.jsx'
 import Home from './components/Home.jsx'
@@ -10,6 +10,7 @@ import Signup from './components/Signup.jsx'
 import ShelterDashboard from './components/ShelterDashboard.jsx'
 import OAuthCallback from './components/OAuthCallback.jsx'
 import { useAuth } from './context/AuthContext.jsx'
+import SuperAdminDashboard from './components/SuperAdminDashboard.jsx'
 
 const RequireAuth = ({ children }) => {
   const { isAuthenticated } = useAuth()
@@ -49,10 +50,24 @@ const RequireShelterAdmin = ({ children }) => {
   return children
 }
 
+const RequireSuperAdmin = ({ children }) => {
+  const { isAuthenticated, role } = useAuth()
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (role !== 'super_admin') {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return children
+}
+
 
 const AppContent = () => {
   const location = useLocation()
-  const hideSharedLayout = location.pathname.startsWith('/dashboard')
+  const hideSharedLayout = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/super-admin')
   return (
     <>
       {!hideSharedLayout && <Header />}
@@ -80,13 +95,23 @@ const AppContent = () => {
             )}
           />
           <Route
+            path="/super-admin"
+            element={(
+              <RequireSuperAdmin>
+                <SuperAdminDashboard />
+              </RequireSuperAdmin>
+            )}
+          />
+          <Route
             path="/rescue"
             element={(
               <RequireAuth>
                 <Navigate to="/dashboard" replace />
               </RequireAuth>
             )}
+
           />
+
         </Routes>
       </main>
       {!hideSharedLayout && <Footer />}
