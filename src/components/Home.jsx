@@ -12,8 +12,8 @@ const Home = () => {
             Find Your New Best Friend
           </h1>
           <p className="animate-fade-up-delay-1 mt-[26px] max-w-[540px] text-[#67686d] text-[20px] leading-[1.55] font-light max-lg:text-[18px] max-sm:mt-4">
-            We rescue dogs and cats from high-kill shelters and help them find loving forever homes.
-            Start your adoption journey today.
+          We connect adopters with trusted shelters and rescue partners to help dogs and cats find loving homes.
+          Start your adoption journey with confidence.
           </p>
           <div className="animate-fade-up-delay-2 mt-7 flex flex-wrap gap-4">
             <button className="animate-heartbeat flex items-center gap-[14px] rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer max-lg:text-[16px] max-sm:text-[15px]">

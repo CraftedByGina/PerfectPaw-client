@@ -89,45 +89,133 @@ const SuperAdminDashboard = () => {
     }
 
     if (loading) {
-        return <h1>Loading super admin dashboard...</h1>
+        return (
+            <section className="min-h-screen bg-[#f5f3f0] px-6 py-10">
+                <div className="w-[min(1500px,calc(100%-96px))] mx-auto">
+                    <h1 className="m-0 font-serif text-[clamp(40px,5vw,72px)] text-[#0F2A44]">
+                        Loading super admin dashboard...
+                    </h1>
+                </div>
+            </section>
+        )
     }
 
     return (
-        <section style={{ padding: '24px' }}>
-            <h1>Super Admin Dashboard</h1>
+        <section className="min-h-screen bg-[#f5f3f0] pb-20">
+            <header className="bg-[#f2f2f2] pt-10 pb-7">
+                <div className="w-[min(1500px,calc(100%-96px))] mx-auto">
+                    <div className="flex flex-wrap items-start justify-between gap-5">
+                        <div>
+                            <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
+                                Super admin
+                            </p>
+                            <h1 className="animate-fade-up m-0 mt-3 font-serif text-[clamp(46px,5vw,86px)] leading-[1] tracking-[-0.02em] text-[#0F2A44]">
+                                Shelter Reviews
+                            </h1>
+                            <p className="animate-fade-up-delay-1 mt-[18px] max-w-[780px] text-[#67686d] text-[20px] leading-[1.55]">
+                                Review pending shelter registrations and approve trusted partners for Perfect Paw.
+                            </p>
+                        </div>
 
-            <button onClick={logout}>Logout</button>
-
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            <h2>Pending Shelter Requests</h2>
-
-            {shelters.length === 0 && <p>No pending shelters.</p>}
-
-            {shelters.map((shelter) => (
-                <div
-                    key={shelter._id}
-                    style={{
-                        border: '1px solid #ccc',
-                        padding: '16px',
-                        marginBottom: '12px',
-                    }}
-                >
-                    <h3>{shelter.name}</h3>
-                    <p>Email: {shelter.contactEmail}</p>
-                    <p>Phone: {shelter.contactPhone}</p>
-                    <p>City: {shelter.city}, {shelter.state}</p>
-                    <p>Status: {shelter.approvalStatus}</p>
-
-                    <button onClick={() => approveShelter(shelter._id)}>
-                        Approve
-                    </button>
-
-                    <button onClick={() => rejectShelter(shelter._id)}>
-                        Reject
-                    </button>
+                        <button
+                            className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer"
+                            onClick={logout}
+                        >
+                            Logout
+                        </button>
+                    </div>
                 </div>
-            ))}
+            </header>
+
+            <main className="w-[min(1500px,calc(100%-96px))] mx-auto pt-7">
+                {error && (
+                    <p className="mb-5 rounded-lg border border-[#f0b8b8] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
+                        {error}
+                    </p>
+                )}
+
+                <section>
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
+                                Pending requests
+                            </p>
+                            <h2 className="mt-3 mb-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">
+                                Shelter Applications
+                            </h2>
+                        </div>
+                        <p className="m-0 text-[#67686d] text-sm">
+                            {shelters.length} pending
+                        </p>
+                    </div>
+
+                    <div className="mt-5 flex flex-col gap-4">
+                        {shelters.length === 0 && (
+                            <p className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 text-[#67686d]">
+                                No pending shelters.
+                            </p>
+                        )}
+
+                        {shelters.map((shelter) => (
+                            <article
+                                key={shelter._id}
+                                className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)]"
+                            >
+                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                    <div>
+                                        <h3 className="m-0 font-serif text-[32px] text-[#0F2A44]">{shelter.name}</h3>
+                                        <p className="mt-1 mb-0 text-sm text-[#67686d]">
+                                            {shelter.city || 'City not provided'}{shelter.state ? `, ${shelter.state}` : ''}
+                                        </p>
+                                    </div>
+
+                                    <span className="rounded-full bg-[#fff7eb] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#9a5b00]">
+                                        {shelter.approvalStatus}
+                                    </span>
+                                </div>
+
+                                <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#55585f]">
+                                    <p className="m-0 flex-[1_1_240px]">
+                                        <strong className="text-[#0F2A44]">Admin:</strong>{' '}
+                                        {shelter.adminUserId?.fullName || 'Not provided'}
+                                        {shelter.adminUserId?.email ? ` - ${shelter.adminUserId.email}` : ''}
+                                    </p>
+                                    <p className="m-0 flex-[1_1_240px]">
+                                        <strong className="text-[#0F2A44]">Contact:</strong>{' '}
+                                        {shelter.contactEmail || 'No email'}{shelter.contactPhone ? ` - ${shelter.contactPhone}` : ''}
+                                    </p>
+                                    <p className="m-0 flex-[1_1_240px]">
+                                        <strong className="text-[#0F2A44]">License:</strong>{' '}
+                                        {shelter.licenseNumber || 'Not provided'}
+                                    </p>
+                                </div>
+
+                                {shelter.missionStatement && (
+                                    <p className="mt-4 mb-0 rounded-[14px] bg-[#f6f6f7] p-3 text-sm leading-6 text-[#55585f]">
+                                        {shelter.missionStatement}
+                                    </p>
+                                )}
+
+                                <div className="mt-5 flex flex-wrap gap-3">
+                                    <button
+                                        className="rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer"
+                                        onClick={() => approveShelter(shelter._id)}
+                                    >
+                                        Approve
+                                    </button>
+
+                                    <button
+                                        className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer"
+                                        onClick={() => rejectShelter(shelter._id)}
+                                    >
+                                        Reject
+                                    </button>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+            </main>
         </section>
     )
 }

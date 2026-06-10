@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.19.0",
+    "lucide-react": "^1.17.0",
     "react-dom": "^19.2.5",
     "react-router": "^7.14.0",
     "serve": "^14.2.6"
