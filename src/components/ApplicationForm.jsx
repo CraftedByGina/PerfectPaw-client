@@ -1,5 +1,9 @@
 import { useState } from 'react'
 
+const API_BASE_URL = import.meta.env.DEV
+  ? ''
+  : import.meta.env.VITE_API_BASE_URL || ''
+
 const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
     const [formData, setFormData] = useState({
         phone: '',
@@ -32,7 +36,7 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
         try {
             setIsSubmitting(true)
 
-            const response = await fetch('/api/applications', {
+            const response = await fetch(`${API_BASE_URL}/api/applications`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,7 +67,7 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
         <form onSubmit={handleSubmit} className="grid gap-5">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Adoption application</p>
+                    <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Adoption Aplication</p>
                     <h2 className="mt-2 mb-0 font-serif text-[34px] leading-tight text-[#0F2A44]">
                         Apply to Adopt {pet.name}
                     </h2>

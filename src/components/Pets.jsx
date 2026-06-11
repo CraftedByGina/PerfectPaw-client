@@ -170,23 +170,28 @@ const Pets = () => {
 
   return (
     <>
-      <div className="fixed right-4 bottom-4 z-20 w-[min(300px,32vw)] min-w-[300px] origin-bottom-right scale-[2] max-sm:right-2 max-sm:bottom-2 max-sm:w-[300px] pointer-events-none" aria-hidden="true">
-        <DotLottieReact
-          src="https://lottie.host/22ad055c-6095-4895-b8c0-62282cf7b04a/NOyZGDRUA7.lottie"
-          loop
-          autoplay
-        />
-      </div>
+
 
       {/* Top Section */}
       <section className="bg-[#f2f2f2] pt-10 pb-7">
-        <div className="w-[min(1500px,calc(100%-96px))] mx-auto">
-          <h1 className="animate-fade-up m-0 font-serif text-[clamp(46px,5vw,86px)] tracking-[-0.02em] text-[#0F2A44]">
-            Adoptable Pets
-          </h1>
-          <p className="animate-fade-up-delay-1 mt-[18px] max-w-[900px] text-[#67686d] text-[20px] leading-[1.55]">
-            Meet our wonderful dogs and cats waiting for their forever homes. Use the filters to match your pet.
-          </p>
+        <div className="w-[min(1500px,calc(100%-96px))] mx-auto flex items-center gap-4 max-md:flex-col max-md:items-start">
+          <div>
+            <h1 className="animate-fade-up m-0 font-serif text-[clamp(46px,5vw,86px)] tracking-[-0.02em] text-[#0F2A44]">
+              Adoptable Pets
+            </h1>
+
+            <p className="animate-fade-up-delay-1 mt-[18px] max-w-[900px] text-[#67686d] text-[20px] leading-[1.55]">
+              Meet our wonderful dogs and cats waiting for their forever homes. Use the filters to match your pet.
+            </p>
+          </div>
+
+          <div className="w-[300px] -ml-4 max-md:w-[360px] max-md:ml-4" aria-hidden="true">
+            <DotLottieReact
+              src="https://lottie.host/22ad055c-6095-4895-b8c0-62282cf7b04a/NOyZGDRUA7.lottie"
+              loop
+              autoplay
+            />
+          </div>
         </div>
       </section>
 

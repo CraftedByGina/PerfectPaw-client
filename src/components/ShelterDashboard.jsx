@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../context/AuthContext.jsx'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import {
   LayoutDashboard,
   PawPrint,
@@ -15,6 +16,9 @@ import {
   Syringe,
 } from 'lucide-react'
 
+const API_BASE_URL = import.meta.env.DEV
+  ? ''
+  : import.meta.env.VITE_API_BASE_URL || ''
 
 const readApiError = async (response) => {
   try {
@@ -53,7 +57,7 @@ const ShelterDashboard = () => {
       try {
         setError('')
 
-        const shelterRes = await fetch('/api/shelters/me', {
+        const shelterRes = await fetch(`${API_BASE_URL}/api/shelters/me`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -73,7 +77,7 @@ const ShelterDashboard = () => {
           return;
         }
 
-        const appRes = await fetch('/api/applications', {
+        const appRes = await fetch(`${API_BASE_URL}/api/applications`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -90,7 +94,7 @@ const ShelterDashboard = () => {
         let allPets = []
 
         for (const status of statuses) {
-          const url = `/api/pets?status=${status}&shelterId=${myShelter._id}`
+          const url = `${API_BASE_URL}/api/pets?status=${status}&shelterId=${myShelter._id}`
 
           const petRes = await fetch(url)
 
@@ -134,17 +138,32 @@ const ShelterDashboard = () => {
   const getPetInitial = (name) => (name || '?').charAt(0).toUpperCase()
   const getPetImage = (pet) => pet.imageUrl || '/images/dog.png'
   const getStatusLabel = (status) => {
-    if (status === 'submitted' || status === 'pending') return 'New'
+    if (status === 'submitted') return 'New'
     if (status === 'reviewing') return 'In Review'
     if (status === 'approved') return 'Approved'
     if (status === 'rejected') return 'Rejected'
+    if (status === 'withdrawn') return 'Withdrawn'
     return status || 'Unknown'
   }
   const getStatusClass = (status) => {
-    if (status === 'submitted' || status === 'pending') return 'bg-[#cfe5ff] text-[#0F2A44]'
+    if (status === 'submitted') return 'bg-[#cfe5ff] text-[#0F2A44]'
     if (status === 'reviewing') return 'bg-[#fff7eb] text-[#9a5b00]'
     if (status === 'approved') return 'bg-[#dff2df] text-[#274c2b]'
     if (status === 'rejected') return 'bg-[#ffdad9] text-[#a23b42]'
+    if (status === 'withdrawn') return 'bg-[#ededee] text-[#6c6d72]'
+    return 'bg-[#ededee] text-[#6c6d72]'
+  }
+  const getCourseStatusLabel = (courseStatus) => {
+    if (courseStatus === 'pending') return 'Course Pending'
+    if (courseStatus === 'passed') return 'Course Passed'
+    if (courseStatus === 'failed') return 'Course Failed'
+    return 'Course Unknown'
+  }
+  const getCourseStatusClass = (courseStatus) => {
+    if (courseStatus === 'pending') return 'bg-[#fff7eb] text-[#9a5b00]'
+    if (courseStatus === 'passed') return 'bg-[#dff2df] text-[#274c2b]'
+    if (courseStatus === 'failed') return 'bg-[#ffdad9] text-[#a23b42]'
+
     return 'bg-[#ededee] text-[#6c6d72]'
   }
   const sidebarName = user?.fullName || user?.email || shelter?.name || 'Shelter account'
@@ -182,8 +201,48 @@ const ShelterDashboard = () => {
     },
   ]
 
+  const handleReviewApplication = async (applicationId, nextStatus) => {
+    try {
+      setError('')
+      setProcessingApplicationId(applicationId)
 
+      const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/review`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: nextStatus,
+        })
+      })
 
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Could not update application status ')
+      }
+
+      const updatedApplication = data.data
+
+      setApplications((currentApplications) =>
+        currentApplications.map((application) => {
+          if (application._id !== applicationId) {
+            return application
+          }
+          return {
+            ...application,
+            status: updatedApplication.status,
+            courseStatus: updatedApplication.courseStatus,
+          }
+        })
+      )
+    } catch (err) {
+      setError(err.message || 'Could not update application.')
+    } finally {
+      setProcessingApplicationId('')
+    }
+  }
 
   const handleLogout = () => {
     logout()
@@ -239,8 +298,8 @@ const ShelterDashboard = () => {
             <a
               key={id}
               className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold no-underline transition-colors ${activeNavItem === id
-                  ? 'bg-[#ef767a] text-white'
-                  : 'text-[#55585f] hover:bg-[#ededee]'
+                ? 'bg-[#ef767a] text-white'
+                : 'text-[#55585f] hover:bg-[#ededee]'
                 }`}
               href={href}
               onClick={() => setActiveNavItem(id)}
@@ -263,16 +322,25 @@ const ShelterDashboard = () => {
       </aside>
 
       <div className="md:ml-72">
-        <header className="bg-[#f2f2f2] pt-10 pb-7">
+        <header className="bg-[#f2f2f2] pt-6 pb-5">
           <div className="w-[min(1500px,calc(100%-96px))] mx-auto">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
                 <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
                   Shelter staff
                 </p>
-                <h1 className="animate-fade-up m-0 mt-3 font-serif text-[clamp(46px,4.5vw,66px)] leading-[1] tracking-[-0.02em] text-[#0F2A44]">
-                  {shelter?.name || 'Shelter Dashboard'}
-                </h1>
+                <div className="mt-3 flex items-center gap-4">
+                  <h1 className="animate-fade-up m-0 mt-3 font-serif text-[clamp(36px,4vw,56px)] leading-[1] tracking-[-0.02em] text-[#0F2A44]">
+                    {shelter?.name || 'Shelter Dashboard'}
+                  </h1>
+                  <DotLottieReact
+                    className="w-[220px] shrink-0 max-md:w-[180px]"
+                    aria-hidden="true"
+                    src="https://lottie.host/86f8e64d-015f-433b-ba95-2618029fec3c/h5hRcSCc4s.lottie"
+                    loop
+                    autoplay
+                  />
+                </div>
                 <p className="animate-fade-up-delay-1 mt-[18px] max-w-[780px] text-[#67686d] text-[20px] leading-[1.55]">
                   Review applications, track pets, and keep your shelter listings ready for adoptions.
                 </p>
@@ -358,6 +426,12 @@ const ShelterDashboard = () => {
                 )}
 
                 {recentApplications.map((application) => {
+                  const isProcessing = processingApplicationId === application._id
+                  const isFinalStatus = ['approved', 'rejected', 'withdrawn'].includes(application.status)
+                  const canStartReview = application.status === 'submitted'
+                  const canApprove = !isFinalStatus && application.courseStatus === 'passed'
+                  const canReject = !isFinalStatus
+
                   const petName = getApplicationPetName(application)
 
                   return (
@@ -376,15 +450,51 @@ const ShelterDashboard = () => {
                           </div>
                         </div>
 
-                        <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${getStatusClass(application.status)}`}>
-                          {getStatusLabel(application.status)}
-                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${getStatusClass(application.status)}`}>
+                            {getStatusLabel(application.status)}
+                          </span>
+                          <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${getCourseStatusClass(application.courseStatus)}`}>
+                            {getCourseStatusLabel(application.courseStatus)}
+                          </span>
+                        </div>
                       </div>
 
                       {(application.reasonForAdoption || application.message) && (
                         <p className="mt-4 mb-0 rounded-[14px] bg-[#f6f6f7] p-3 text-sm leading-6 text-[#55585f]">
                           {application.reasonForAdoption || application.message}
                         </p>
+                      )}
+                      {!isFinalStatus && (
+                        <div className="mt-5 flex flex-wrap gap-3">
+                          {canStartReview && (
+                            <button
+                              type="button"
+                              disabled={isProcessing}
+                              onClick={() => handleReviewApplication(application._id, 'reviewing')}
+                            >
+                              {isProcessing ? 'Updating...' : 'Start Review'}
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            disabled={isProcessing || !canApprove}
+                            onClick={() => handleReviewApplication(application._id, 'approved')}
+                          >
+                            Approve
+                          </button>
+
+                          {canReject && (
+                            <button
+                              type="button"
+                              disabled={isProcessing}
+                              onClick={() => handleReviewApplication(application._id, 'rejected')}
+                            >
+                              Reject
+                            </button>
+                          )}
+                        </div>
                       )}
                     </article>
                   )

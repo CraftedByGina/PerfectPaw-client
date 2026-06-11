@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { Eye, EyeOff } from 'lucide-react'
+
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -12,6 +14,14 @@ const Signup = () => {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [saving, setSaving] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [shelterName, setShelterName] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const[licenseNumber, setLicenseNumber] = useState('')
+  const [missionStatement, setMissionStatement] = useState('')
+
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -40,6 +50,8 @@ const Signup = () => {
       setSaving(false)
     }
   }
+  const isShelterSignup = role === 'shelter_admin'
+
 
   const handleOAuthLogin = () => {
     setError('')
@@ -99,14 +111,26 @@ const Signup = () => {
 
           <label className="grid gap-1.5">
             <span className="text-sm text-[#2f3034]">Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="new-password"
-              required
-              className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="new-password"
+                required
+                className="w-full rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 pr-10"
+              />
+
+              <button
+                type='button'
+                onClick={() => setShowPassword((currentValue) => !currentValue)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#67686d] hover:text-[#2f3034]"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className='h-5 w-5' />}
+              </button>
+            </div>
           </label>
 
           <label className="grid gap-1.5">
@@ -117,10 +141,28 @@ const Signup = () => {
               className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
             >
               <option value="adopter">Adopter</option>
-              <option value="shelter_admin">Shelter Admin</option>
+              <option value="shelter_admin">Shelter Manager</option>
             </select>
-          </label>
 
+          </label>
+          {isShelterSignup && (
+            <div className="grid gap-3 rounded-lg border border-[#d7d7d9] bg-[#f9fbfc] p-4">
+              <h2 className="m-0 font-serif text-[26px] text-[#0F2A44]">
+                Shelter Information
+              </h2>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Shelter name</span>
+                <input
+                  type="text"
+                  value={shelterName}
+                  onChange={(event) => setShelterName(event.target.value)}
+                  required={isShelterSignup}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+
+            </div>
+          )}
           <button
             type="submit"
             disabled={saving}
@@ -146,7 +188,7 @@ const Signup = () => {
           Already have an account? <Link to="/login" className="text-red-500 font-bold">Sign In</Link>
         </p>
       </div>
-    </section>
+    </section >
   )
 }
 

@@ -14,13 +14,13 @@ const readApiError = async (response) => {
 }
 
 const submitCourseQuiz = async ({ applicationId, token, answers, courseStatus }) => {
-  const headers = {
-    'Content-Type': 'application/json',
-  }
+	const headers = {
+		'Content-Type': 'application/json',
+	}
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
+	if (token) {
+		headers.Authorization = `Bearer ${token}`
+	}
 
 	const response = await fetch(`${API_BASE_URL}/api/applications/${applicationId}/course`, {
 		method: 'PATCH',
