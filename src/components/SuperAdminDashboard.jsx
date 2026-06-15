@@ -90,9 +90,9 @@ const SuperAdminDashboard = () => {
 
     if (loading) {
         return (
-            <section className="min-h-screen bg-[#f5f3f0] px-6 py-10">
-                <div className="w-[min(1500px,calc(100%-96px))] mx-auto">
-                    <h1 className="m-0 font-serif text-[clamp(40px,5vw,72px)] text-[#0F2A44]">
+            <section className="min-h-screen bg-[#f5f3f0] px-6 py-10 max-sm:px-4">
+                <div className="w-[min(1500px,calc(100%-96px))] mx-auto max-sm:w-full">
+                    <h1 className="m-0 font-serif text-[clamp(34px,5vw,72px)] text-[#0F2A44]">
                         Loading super admin dashboard...
                     </h1>
                 </div>
@@ -102,23 +102,23 @@ const SuperAdminDashboard = () => {
 
     return (
         <section className="min-h-screen bg-[#f5f3f0] pb-20">
-            <header className="bg-[#f2f2f2] pt-10 pb-7">
-                <div className="w-[min(1500px,calc(100%-96px))] mx-auto">
-                    <div className="flex flex-wrap items-start justify-between gap-5">
+            <header className="bg-[#f2f2f2] pt-10 pb-7 max-sm:pt-8">
+                <div className="w-[min(1500px,calc(100%-96px))] mx-auto max-sm:w-[calc(100%-32px)]">
+                    <div className="flex flex-wrap items-start justify-between gap-5 max-sm:flex-col">
                         <div>
                             <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
                                 Super admin
                             </p>
-                            <h1 className="animate-fade-up m-0 mt-3 font-serif text-[clamp(46px,5vw,86px)] leading-[1] tracking-[-0.02em] text-[#0F2A44]">
+                            <h1 className="animate-fade-up m-0 mt-3 font-serif text-[clamp(38px,5vw,86px)] leading-[1] tracking-[-0.02em] text-[#0F2A44]">
                                 Shelter Reviews
                             </h1>
-                            <p className="animate-fade-up-delay-1 mt-[18px] max-w-[780px] text-[#67686d] text-[20px] leading-[1.55]">
+                            <p className="animate-fade-up-delay-1 mt-[18px] max-w-[780px] text-[#67686d] text-[20px] leading-[1.55] max-sm:text-[17px]">
                                 Review pending shelter registrations and approve trusted partners for Perfect Paw.
                             </p>
                         </div>
 
                         <button
-                            className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer"
+                            className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer max-sm:w-full"
                             onClick={logout}
                         >
                             Logout
@@ -127,7 +127,7 @@ const SuperAdminDashboard = () => {
                 </div>
             </header>
 
-            <main className="w-[min(1500px,calc(100%-96px))] mx-auto pt-7">
+            <main className="w-[min(1500px,calc(100%-96px))] mx-auto pt-7 max-sm:w-[calc(100%-32px)]">
                 {error && (
                     <p className="mb-5 rounded-lg border border-[#f0b8b8] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
                         {error}
@@ -135,7 +135,7 @@ const SuperAdminDashboard = () => {
                 )}
 
                 <section>
-                    <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div className="flex flex-wrap items-end justify-between gap-3 max-sm:flex-col max-sm:items-start">
                         <div>
                             <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
                                 Pending requests
@@ -159,11 +159,11 @@ const SuperAdminDashboard = () => {
                         {shelters.map((shelter) => (
                             <article
                                 key={shelter._id}
-                                className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)]"
+                                className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:p-4"
                             >
-                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                <div className="flex flex-wrap items-start justify-between gap-4 max-sm:flex-col">
                                     <div>
-                                        <h3 className="m-0 font-serif text-[32px] text-[#0F2A44]">{shelter.name}</h3>
+                                        <h3 className="m-0 font-serif text-[32px] text-[#0F2A44] max-sm:text-[26px]">{shelter.name}</h3>
                                         <p className="mt-1 mb-0 text-sm text-[#67686d]">
                                             {shelter.city || 'City not provided'}{shelter.state ? `, ${shelter.state}` : ''}
                                         </p>
@@ -174,17 +174,17 @@ const SuperAdminDashboard = () => {
                                     </span>
                                 </div>
 
-                                <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#55585f]">
-                                    <p className="m-0 flex-[1_1_240px]">
+                                <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#55585f] max-sm:flex-col max-sm:gap-3">
+                                    <p className="m-0 flex-[1_1_240px] break-words max-sm:flex-auto">
                                         <strong className="text-[#0F2A44]">Admin:</strong>{' '}
                                         {shelter.adminUserId?.fullName || 'Not provided'}
                                         {shelter.adminUserId?.email ? ` - ${shelter.adminUserId.email}` : ''}
                                     </p>
-                                    <p className="m-0 flex-[1_1_240px]">
+                                    <p className="m-0 flex-[1_1_240px] break-words max-sm:flex-auto">
                                         <strong className="text-[#0F2A44]">Contact:</strong>{' '}
                                         {shelter.contactEmail || 'No email'}{shelter.contactPhone ? ` - ${shelter.contactPhone}` : ''}
                                     </p>
-                                    <p className="m-0 flex-[1_1_240px]">
+                                    <p className="m-0 flex-[1_1_240px] break-words max-sm:flex-auto">
                                         <strong className="text-[#0F2A44]">License:</strong>{' '}
                                         {shelter.licenseNumber || 'Not provided'}
                                     </p>
@@ -196,7 +196,7 @@ const SuperAdminDashboard = () => {
                                     </p>
                                 )}
 
-                                <div className="mt-5 flex flex-wrap gap-3">
+                                <div className="mt-5 flex flex-wrap gap-3 max-sm:flex-col">
                                     <button
                                         className="rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer"
                                         onClick={() => approveShelter(shelter._id)}

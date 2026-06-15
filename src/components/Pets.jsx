@@ -173,20 +173,21 @@ const Pets = () => {
 
 
       {/* Top Section */}
-      <section className="bg-[#f2f2f2] pt-10 pb-7">
-        <div className="w-[min(1500px,calc(100%-96px))] mx-auto flex items-center gap-4 max-md:flex-col max-md:items-start">
+      <section className="bg-[#f2f2f2] pt-10 pb-7 max-sm:pt-8">
+        <div className="w-[min(1500px,calc(100%-96px))] mx-auto flex items-center gap-4 max-md:flex-col max-md:items-start max-sm:w-[calc(100%-32px)]">
           <div>
             <h1 className="animate-fade-up m-0 font-serif text-[clamp(46px,5vw,86px)] tracking-[-0.02em] text-[#0F2A44]">
               Adoptable Pets
             </h1>
 
-            <p className="animate-fade-up-delay-1 mt-[18px] max-w-[900px] text-[#67686d] text-[20px] leading-[1.55]">
+            <p className="animate-fade-up-delay-1 mt-[18px] max-w-[900px] text-[#67686d] text-[20px] leading-[1.55] max-sm:text-[17px]">
               Meet our wonderful dogs and cats waiting for their forever homes. Use the filters to match your pet.
             </p>
           </div>
 
-          <div className="w-[300px] -ml-4 max-md:w-[360px] max-md:ml-4" aria-hidden="true">
+          <div className="w-[300px] -ml-4 max-md:w-[min(320px,86vw)] max-md:ml-0 max-sm:mx-auto max-sm:w-[min(300px,82vw)]" aria-hidden="true">
             <DotLottieReact
+              className="h-auto w-full"
               src="https://lottie.host/22ad055c-6095-4895-b8c0-62282cf7b04a/NOyZGDRUA7.lottie"
               loop
               autoplay
@@ -197,7 +198,7 @@ const Pets = () => {
 
       {/* Body */}
       <section className="pb-20 pt-7">
-        <div className="w-[min(1500px,calc(100%-96px))] mx-auto flex items-start gap-[38px] max-lg:flex-col">
+        <div className="w-[min(1500px,calc(100%-96px))] mx-auto flex items-start gap-[38px] max-lg:flex-col max-sm:w-[calc(100%-32px)]">
 
           {/* Sidebar */}
           <aside className="animate-slide-left flex-[0_0_360px] pt-1.5 max-lg:w-full max-lg:max-w-[520px] max-sm:max-w-none" aria-label="Filters">
@@ -229,8 +230,8 @@ const Pets = () => {
             <div className="h-px bg-[#d7d7d9] my-3.5" aria-hidden="true" />
 
             {/* Age filter */}
-            <div>
-              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Age</h3>
+            <div className="max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4">
+              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold max-sm:col-span-2">Age</h3>
               {ageFilterOptions.map(group => (
                 <label key={group} className="flex items-center gap-3 my-2.5 text-lg text-[#2f3034] cursor-pointer">
                   <input
@@ -247,8 +248,8 @@ const Pets = () => {
             <div className="h-px bg-[#d7d7d9] my-3.5" aria-hidden="true" />
 
 
-            <div>
-              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Species</h3>
+            <div className="max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4">
+              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold max-sm:col-span-2">Species</h3>
               {speciesFilterOptions.map(kind => (
                 <label key={kind} className="flex items-center gap-3 my-2.5 text-lg text-[#2f3034] cursor-pointer">
                   <input
@@ -265,8 +266,8 @@ const Pets = () => {
             <div className="h-px bg-[#d7d7d9] my-3.5" aria-hidden="true" />
 
             {/* Size filter */}
-            <div>
-              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold">Size</h3>
+            <div className="max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4">
+              <h3 className="m-0 mb-3 text-lg text-[#0F2A44] font-bold max-sm:col-span-2">Size</h3>
               {sizeFilterOptions.map(size => (
                 <label key={size} className="flex items-center gap-3 my-2.5 text-lg text-[#2f3034] cursor-pointer">
                   <input
@@ -281,7 +282,7 @@ const Pets = () => {
             </div>
           </aside>
           {/* Pet cards */}
-          <section className="flex-1 flex flex-wrap gap-7 pt-1" aria-label="Pets list">
+          <section className="flex-1 flex flex-wrap gap-7 pt-1 max-lg:w-full max-sm:gap-5" aria-label="Pets list">
             {loading && <p className="text-[#67686d] text-lg">Loading pets...</p>}
             {!loading && error && <p className="text-[#b42318] text-lg">{error}</p>}
             {!isAuthenticated && !loading && !error && (
@@ -300,14 +301,14 @@ const Pets = () => {
             {filtered.map((pet, i) => (
               <article
                 key={getPetId(pet)}
-                className="pet-card flex-[1_1_320px] max-w-[420px] bg-[#f6f6f7] border border-[#d7d7d9] rounded-[14px] overflow-hidden shadow-[0_8px_16px_rgba(0,0,0,0.06)]"
+                className="pet-card flex-[1_1_320px] max-w-[420px] bg-[#f6f6f7] border border-[#d7d7d9] rounded-[14px] overflow-hidden shadow-[0_8px_16px_rgba(0,0,0,0.06)] max-sm:max-w-none max-sm:flex-[1_1_100%]"
                 style={{ animation: `fadeUp 0.5s ${i * 0.1}s ease both` }}
               >
-                <div className="h-[260px] overflow-hidden">
+                <div className="h-[260px] overflow-hidden max-sm:h-[220px]">
                   <img className="pet-card-img w-full h-full object-cover block" src={getPetImage(pet)} alt={`Photo of ${getPetName(pet)}`} />
                 </div>
                 <div className="p-[18px_18px_20px] bg-[#f6f6f7]">
-                  <div className="flex items-baseline justify-between gap-3.5">
+                  <div className="flex items-baseline justify-between gap-3.5 max-sm:flex-wrap">
                     <h3 className="m-0 font-serif text-[34px] tracking-[-0.01em] text-[#0F2A44]">{getPetName(pet)}</h3>
                     <p className="m-0 text-[#6c6d72] text-lg">
                       {getPetSex(pet)}, {getPetAge(pet)} yr{getPetAge(pet) !== 1 ? 's' : ''}
@@ -336,11 +337,11 @@ const Pets = () => {
       </section>
       {selectedPet && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8 max-sm:items-end max-sm:px-0 max-sm:py-0"
           aria-modal="true"
           aria-label={`Application for ${getPetName(selectedPet)}`}
         >
-          <div className="max-h-[calc(100vh-64px)] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-[#d7d7d9] bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:p-8">
+          <div className="max-h-[calc(100vh-64px)] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-[#d7d7d9] bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:p-8 max-sm:max-h-[92vh] max-sm:rounded-b-none max-sm:p-4">
             <ApplicationForm
               pet={selectedPet}
               token={token}

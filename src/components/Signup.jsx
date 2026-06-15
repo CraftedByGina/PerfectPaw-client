@@ -10,17 +10,22 @@ const Signup = () => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('user')
+  const [role, setRole] = useState('adopter')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [saving, setSaving] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [shelterName, setShelterName] = useState('')
   const [contactPhone, setContactPhone] = useState('')
+  const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
-  const[licenseNumber, setLicenseNumber] = useState('')
+  const [zipCode, setZipCode] = useState('')
+  const [website, setWebsite] = useState('')
+  const [licenseNumber, setLicenseNumber] = useState('')
+  const [yearsOperating, setYearsOperating] = useState('')
   const [missionStatement, setMissionStatement] = useState('')
+
 
 
   const handleSubmit = async (event) => {
@@ -35,6 +40,16 @@ const Signup = () => {
         email: email.trim(),
         password,
         role,
+        shelterName: shelterName.trim(),
+        contactPhone: contactPhone.trim(),
+        address: address.trim(),
+        city: city.trim(),
+        state: state.trim(),
+        zipCode: zipCode.trim(),
+        website: website.trim(),
+        licenseNumber: licenseNumber.trim(),
+        yearsOperating: yearsOperating ? Number(yearsOperating) : 0,
+        missionStatement: missionStatement.trim(),
       })
 
       if (session?.token) {
@@ -64,25 +79,35 @@ const Signup = () => {
   }
 
   return (
-    <section className="w-[min(760px,calc(100%-32px))] mx-auto py-12">
-      <div className="rounded-[16px] border border-[#d7d7d9] bg-white p-6 sm:p-8">
+    <section className="w-[min(760px,calc(100%-32px))] mx-auto py-12 max-sm:py-8">
+      <div className="rounded-[16px] border border-[#d7d7d9] bg-white p-6 sm:p-8 max-sm:p-4">
         <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Account Setup</p>
-        <h1 className="mt-3 mb-0 font-serif text-[42px] leading-[1.1] text-[#0F2A44]">Create Your Account</h1>
+        <h1 className="mt-3 mb-0 font-serif text-[42px] leading-[1.1] text-[#0F2A44] max-sm:text-[34px]">Create Your Account</h1>
         <p className="mt-3 mb-0 text-[#55585f] text-[16px] leading-[1.7]">
-          You can create an account with Google or using the form below.
+          {isShelterSignup
+            ? 'Complete the verification form so Perfect Paw can review your organization.'
+            : 'You can create an account with Google or using the form below.'}
         </p>
 
-        <button
-          type="button"
-          onClick={handleOAuthLogin}
-          className="mt-6 w-full rounded-lg border-2 border-[#0F2A44] bg-[#0F2A44] px-5 py-2.5 text-base font-semibold text-white"
-        >
-          Continue with Google
-        </button>
+        {!isShelterSignup ? (
+          <>
+            <button
+              type="button"
+              onClick={handleOAuthLogin}
+              className="mt-6 w-full rounded-lg border-2 border-[#0F2A44] bg-[#0F2A44] px-5 py-2.5 text-base font-semibold text-white"
+            >
+              Continue with Google
+            </button>
 
-        <p className="mt-3 mb-0 text-center text-xs text-[#67686d]">
-          or create an account with the form below
-        </p>
+            <p className="mt-3 mb-0 text-center text-xs text-[#67686d]">
+              or create an account with the form below
+            </p>
+          </>
+        ) : (
+          <p className="mt-6 mb-0 rounded-lg border border-[#f3d3a6] bg-[#fff7eb] p-3 text-sm text-[#7a5208]">
+            Shelter registration requires the verification form below so we can review your organization.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-6 grid gap-3">
           <label className="grid gap-1.5">
@@ -160,7 +185,96 @@ const Signup = () => {
                   className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
                 />
               </label>
-
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Contact phone</span>
+                <input
+                  type="tel"
+                  value={contactPhone}
+                  onChange={(event) => setContactPhone(event.target.value)}
+                  required={isShelterSignup}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Address</span>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(event) => setAddress(event.target.value)}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">City</span>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  required={isShelterSignup}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">State</span>
+                <input
+                  type="text"
+                  value={state}
+                  onChange={(event) => setState(event.target.value)}
+                  required={isShelterSignup}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Zip code</span>
+                <input
+                  type="text"
+                  value={zipCode}
+                  onChange={(event) => setZipCode(event.target.value)}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Website</span>
+                <input
+                  type="url"
+                  value={website}
+                  onChange={(event) => setWebsite(event.target.value)}
+                  required={false}
+                  placeholder="https://www.example.com"
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">License number</span>
+                <input
+                  type="text"
+                  value={licenseNumber}
+                  onChange={(event) => setLicenseNumber(event.target.value)}
+                  required={isShelterSignup}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Years operating</span>
+                <input
+                  type="number"
+                  value={yearsOperating}
+                  onChange={(event) => setYearsOperating(event.target.value)}
+                  required={false}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
+              <label className="grid gap-1.5">
+                <span className="text-sm text-[#2f3034]">Mission statement</span>
+                <textarea
+                  value={missionStatement}
+                  onChange={(event) => setMissionStatement(event.target.value)}
+                  required={isShelterSignup}
+                  rows={4}
+                  placeholder="Tell us about your mission and how you help pets in need."
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
+                />
+              </label>
             </div>
           )}
           <button

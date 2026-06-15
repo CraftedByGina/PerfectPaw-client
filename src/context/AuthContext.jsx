@@ -181,7 +181,7 @@ export const AuthProvider = ({ children }) => {
     return nextSession
   }
 
-  const signup = async ({ fullName, email, password, role }) => {
+  const signup = async ({ fullName, email, password, role, shelterName, contactPhone, address, city, state, zipCode, website, licenseNumber, yearsOperating, missionStatement }) => {
     const response = await fetch(joinUrl(API_BASE_URL, REGISTER_PATH), {
       method: 'POST',
       headers: {
@@ -192,6 +192,16 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
         role: mapRoleForApi(role),
+        shelterName,
+        contactPhone,
+        address,
+        city,
+        state,
+        zipCode,
+        website,
+        licenseNumber,
+        yearsOperating,
+        missionStatement,
       }),
     })
 

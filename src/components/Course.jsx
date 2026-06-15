@@ -13,7 +13,7 @@ const readApiError = async (response) => {
 	}
 }
 
-const submitCourseQuiz = async ({ applicationId, token, answers, courseStatus }) => {
+const submitCourseQuiz = async ({ applicationId, token, courseStatus }) => {
 	const headers = {
 		'Content-Type': 'application/json',
 	}
@@ -157,6 +157,7 @@ const Course = () => {
 	const isQuizPage = pageIndex === lessonCount
 	const activePage = COURSE_PAGES[pageIndex]
 	const applicationId = searchParams.get('applicationId') || ''
+	const hasApplicationContext = Boolean(applicationId)
 
 	const score = useMemo(() => {
 		return QUIZ.reduce((total, item, index) => {
@@ -166,6 +167,7 @@ const Course = () => {
 
 	const isComplete = Object.keys(answers).length === QUIZ.length
 	const passed = score >= 4
+	const canSubmitForApplication = isComplete && isAuthenticated && hasApplicationContext && !saving
 
 	const setAnswer = (questionIndex, optionIndex) => {
 		setAnswers((prev) => ({ ...prev, [questionIndex]: optionIndex }))
@@ -179,29 +181,27 @@ const Course = () => {
 	}
 
 	const handleSubmit = async () => {
-		setSubmitted(true)
 		setSaveError('')
 		setSaveMessage('')
-		const courseStatus = passed ? "passed" : "failed";
+
+		if (!hasApplicationContext) {
+			setSaveError('This preview is not attached to an animal. Apply for a specific pet first so your course result can be saved.')
+			return
+		}
 
 		if (!isAuthenticated) {
-			setSaveError('You need to be logged in before sending course results.')
+			setSaveError('Sign in before sending course results for this application.')
 			return
 		}
 
-		if (!applicationId) {
-			setSaveError('No application id was found. Start from the pet application button so the course can save to the backend.')
-			return
-		}
-
+		setSubmitted(true)
 		setSaving(true)
+		const courseStatus = passed ? 'passed' : 'failed'
 
 		try {
-			const orderedAnswers = QUIZ.map((_, index) => answers[index])
 			const response = await submitCourseQuiz({
 				applicationId,
 				token,
-				answers: orderedAnswers,
 				courseStatus,
 			})
 
@@ -231,27 +231,42 @@ const Course = () => {
 	}
 
 	return (
-		<section className="w-[min(1200px,calc(100%-96px))] mx-auto py-12 max-sm:w-[calc(100%-32px)]">
+		<section className="w-[min(1200px,calc(100%-96px))] mx-auto py-12 max-sm:w-[calc(100%-32px)] max-sm:py-8">
 			<header className="mb-8">
 				<p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Adoption course</p>
 				<h1 className="mt-3 mb-0 font-serif text-[clamp(36px,4vw,62px)] leading-[1.1] text-[#0F2A44]">
 					Pet Care Basics
 				</h1>
-				<p className="mt-4 mb-0 max-w-[760px] text-[#55585f] text-[18px] leading-[1.6]">
-					This is a guided reading course with multiple pages. Use Next to move through each lesson, then complete a short quiz at the end.
+				<p className="mt-4 mb-0 max-w-[760px] text-[#55585f] text-[18px] leading-[1.6] max-sm:text-[16px]">
+					This guided course is open for learning at any time. To record completion for an adoption, start from a specific pet application so the result attaches to that animal.
 				</p>
 			</header>
+
+			{!hasApplicationContext && (
+				<div className="mb-6 rounded-[16px] border border-[#f3d3a6] bg-[#fff7eb] p-4 text-[#7a5208]">
+					<p className="m-0 text-sm font-semibold uppercase tracking-wider">Preview mode</p>
+					<p className="mt-2 mb-0 text-[16px] leading-6">
+						You can read the course here, but quiz completion will not count toward an adoption until you apply for a specific pet.
+					</p>
+					<Link
+						to="/pets"
+						className="mt-3 inline-flex rounded-lg border-2 border-[#7a5208] px-4 py-2 text-sm font-semibold text-[#7a5208] no-underline"
+					>
+						Choose a pet to apply
+					</Link>
+				</div>
+			)}
 
 			<div className="mb-5 text-sm text-[#67686d]">
 				<p className="m-0">Step {Math.min(pageIndex + 1, lessonCount + 1)} of {lessonCount + 1}</p>
 			</div>
 
 			{!isQuizPage && (
-				<article className="rounded-[16px] border border-[#d7d7d9] bg-white p-6">
-					<h2 className="m-0 font-serif text-[32px] text-[#0F2A44]">{activePage.title}</h2>
+				<article className="rounded-[16px] border border-[#d7d7d9] bg-white p-6 max-sm:p-4">
+					<h2 className="m-0 font-serif text-[32px] text-[#0F2A44] max-sm:text-[26px]">{activePage.title}</h2>
 					<div className="mt-5 grid gap-4">
 						{activePage.paragraphs.map((paragraph) => (
-							<p key={paragraph} className="m-0 text-[#55585f] text-[17px] leading-[1.8]">
+							<p key={paragraph} className="m-0 text-[#55585f] text-[17px] leading-[1.8] max-sm:text-[16px]">
 								{paragraph}
 							</p>
 						))}
@@ -260,20 +275,30 @@ const Course = () => {
 			)}
 
 			{isQuizPage && (
-				<section className="rounded-[16px] border border-[#d7d7d9] bg-[#f9fbfc] p-6">
-					<h2 className="m-0 font-serif text-[34px] text-[#0F2A44]">Final knowledge check</h2>
+				<section className="rounded-[16px] border border-[#d7d7d9] bg-[#f9fbfc] p-6 max-sm:p-4">
+					<h2 className="m-0 font-serif text-[34px] text-[#0F2A44] max-sm:text-[28px]">Final knowledge check</h2>
 					<p className="mt-2 mb-0 text-[#67686d] text-[16px]">Answer all questions. Passing score: 4 out of 6.</p>
 					{applicationId && (
 						<p className="mt-2 mb-0 text-[#67686d] text-[14px]">Application: {applicationId}</p>
 					)}
+					{!hasApplicationContext && (
+						<p className="mt-3 mb-0 rounded-lg border border-[#f3d3a6] bg-[#fff7eb] p-3 text-sm text-[#7a5208]">
+							This quiz is disabled in preview mode. Apply for a pet first to save a course result for that animal.
+						</p>
+					)}
+					{hasApplicationContext && !isAuthenticated && (
+						<p className="mt-3 mb-0 rounded-lg border border-[#f0b8b8] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
+							Sign in to submit this course result for the application.
+						</p>
+					)}
 
 					<div className="mt-6 grid gap-5">
 						{QUIZ.map((item, questionIndex) => (
-							<article key={item.question} className="rounded-xl border border-[#d7d7d9] bg-white p-4">
-								<h3 className="m-0 text-[#0F2A44] text-[19px] font-semibold">{questionIndex + 1}. {item.question}</h3>
+							<article key={item.question} className="rounded-xl border border-[#d7d7d9] bg-white p-4 max-sm:p-3">
+								<h3 className="m-0 text-[#0F2A44] text-[19px] font-semibold max-sm:text-[17px]">{questionIndex + 1}. {item.question}</h3>
 								<div className="mt-3 grid gap-2">
 									{item.options.map((option, optionIndex) => (
-										<label key={option} className="flex items-center gap-3 text-[#2f3034] cursor-pointer">
+										<label key={option} className="flex items-center gap-3 text-[#2f3034] cursor-pointer max-sm:items-start">
 											<input
 												type="radio"
 												name={`question-${questionIndex}`}
@@ -294,14 +319,14 @@ const Course = () => {
 						))}
 					</div>
 
-					<div className="mt-6 flex flex-wrap items-center gap-3">
+					<div className="mt-6 flex flex-wrap items-center gap-3 max-sm:flex-col max-sm:items-stretch">
 						<button
 							type="button"
 							onClick={handleSubmit}
-							disabled={!isComplete}
+							disabled={!canSubmitForApplication}
 							className="rounded-lg border-2 border-[#45464a] bg-white px-5 py-2.5 text-base font-semibold text-[#2f3034] disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{saving ? 'Saving...' : 'Submit answers'}
+							{saving ? 'Saving...' : 'Submit for application'}
 						</button>
 						<button
 							type="button"
@@ -343,7 +368,7 @@ const Course = () => {
 				</section>
 			)}
 
-			<div className="mt-6 flex items-center justify-between gap-3">
+			<div className="mt-6 flex items-center justify-between gap-3 max-sm:flex-col-reverse max-sm:items-stretch">
 				<button
 					type="button"
 					onClick={goBack}

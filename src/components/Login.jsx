@@ -48,10 +48,10 @@ const Login = () => {
   }
 
   return (
-    <section className="w-[min(520px,calc(100%-32px))] mx-auto py-12">
-      <div className="rounded-[16px] border border-[#d7d7d9] bg-white p-6 sm:p-8">
+    <section className="w-[min(520px,calc(100%-32px))] mx-auto py-12 max-sm:py-8">
+      <div className="rounded-[16px] border border-[#d7d7d9] bg-white p-6 sm:p-8 max-sm:p-4">
         <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Welcome back</p>
-        <h1 className="mt-3 mb-0 font-serif text-[42px] leading-[1.1] text-[#0F2A44]">Sign in</h1>
+        <h1 className="mt-3 mb-0 font-serif text-[42px] leading-[1.1] text-[#0F2A44] max-sm:text-[34px]">Sign in</h1>
         <p className="mt-3 mb-0 text-[#55585f] text-[16px] leading-[1.6]">
           Shelter admins will be routed to the dashboard. Adopters will be routed to adoptable pets.
         </p>

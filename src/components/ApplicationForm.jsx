@@ -65,10 +65,10 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
 
     return (
         <form onSubmit={handleSubmit} className="grid gap-5">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 max-sm:gap-3">
                 <div>
                     <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Adoption Aplication</p>
-                    <h2 className="mt-2 mb-0 font-serif text-[34px] leading-tight text-[#0F2A44]">
+                    <h2 className="mt-2 mb-0 font-serif text-[34px] leading-tight text-[#0F2A44] max-sm:text-[28px]">
                         Apply to Adopt {pet.name}
                     </h2>
                     <p className="mt-2 mb-0 text-[#67686d] text-[15px] leading-6">
@@ -237,12 +237,12 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
                 />
             </label>
 
-            <div className="flex flex-wrap justify-end gap-3 border-t border-[#ececef] pt-4">
+            <div className="flex flex-wrap justify-end gap-3 border-t border-[#ececef] pt-4 max-sm:flex-col-reverse">
                 <button
                     type="button"
                     onClick={onCancel}
                     disabled={isSubmitting}
-                    className="rounded-lg border border-[#c5c6cb] bg-white px-5 py-2.5 text-base font-semibold text-[#2f3034] disabled:opacity-60"
+                    className="rounded-lg border border-[#c5c6cb] bg-white px-5 py-2.5 text-base font-semibold text-[#2f3034] disabled:opacity-60 max-sm:w-full"
                 >
                     Cancel
                 </button>
@@ -250,7 +250,7 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-lg border-2 border-[#0F2A44] bg-[#0F2A44] px-5 py-2.5 text-base font-semibold text-white disabled:opacity-60"
+                    className="rounded-lg border-2 border-[#0F2A44] bg-[#0F2A44] px-5 py-2.5 text-base font-semibold text-white disabled:opacity-60 max-sm:w-full"
                 >
                     {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </button>
