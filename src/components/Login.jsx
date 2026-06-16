@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Eye, EyeOff } from 'lucide-react'
 
+const isValidEmail = (value) => /\S+@\S+\.\S+/.test(value)
+
 const Login = () => {
   const navigate = useNavigate()
   const { login, startOAuthLogin } = useAuth()
@@ -16,10 +18,28 @@ const Login = () => {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail) {
+      setError('Email is required.')
+      return
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      setError('Enter a valid email address.')
+      return
+    }
+
+    if (!password) {
+      setError('Password is required.')
+      return
+    }
+
     setSaving(true)
 
     try {
-      const session = await login({ email: email.trim(), password })
+      const session = await login({ email: trimmedEmail, password })
       if (session.role === 'super_admin') {
         navigate('/super-admin', { replace: true })
         return

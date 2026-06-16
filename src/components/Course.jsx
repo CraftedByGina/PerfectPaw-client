@@ -184,6 +184,11 @@ const Course = () => {
 		setSaveError('')
 		setSaveMessage('')
 
+		if (!isComplete) {
+			setSaveError('Answer every question before submitting the course.')
+			return
+		}
+
 		if (!hasApplicationContext) {
 			setSaveError('This preview is not attached to an animal. Apply for a specific pet first so your course result can be saved.')
 			return

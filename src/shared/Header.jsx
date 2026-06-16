@@ -19,6 +19,7 @@ const Header = () => {
       <nav className="flex items-center gap-10 max-md:order-3 max-md:w-full max-md:flex-wrap max-md:gap-x-5 max-md:gap-y-3" aria-label="Primary">
         <Link to="/pets" className="nav-link text-[#0F2A44] text-lg font-medium">Adoptable Pets</Link>
         {!isShelterAdmin && <Link to="/course" className="nav-link text-[#0F2A44] text-lg font-medium">Course Preview</Link>}
+        {isAuthenticated && !isShelterAdmin && <Link to="/applications" className="nav-link text-[#0F2A44] text-lg font-medium">Applications</Link>}
         {isShelterAdmin && <Link to="/dashboard" className="nav-link text-[#0F2A44] text-lg font-medium">Dashboard</Link>}
         <a href="#" className="nav-link text-[#0F2A44] text-lg font-medium">Donate</a>
       </nav>

@@ -18,20 +18,20 @@ const Footer = () => {
           <div className="min-w-[130px]">
             <h3 className="m-0 text-[13px] uppercase tracking-widest text-[#0F2A44] font-semibold">Adopt</h3>
             <Link to="/pets" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">View Adoptable Pets</Link>
-            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Adoption Course</a>
-            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Application</a>
+            <Link to="/course" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Adoption Course</Link>
+            <Link to="/applications" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Applications</Link>
           </div>
           <div className="min-w-[130px]">
             <h3 className="m-0 text-[13px] uppercase tracking-widest text-[#0F2A44] font-semibold">Get Involved</h3>
-            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Volunteer</a>
-            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Foster</a>
-            <a href="#" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Donate</a>
+            <a href="mailto:info@theperfectpaw.org?subject=Volunteer%20with%20The%20Perfect%20Paw" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Volunteer</a>
+            <a href="mailto:info@theperfectpaw.org?subject=Foster%20with%20The%20Perfect%20Paw" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Foster</a>
+            <a href="mailto:info@theperfectpaw.org?subject=Donate%20to%20The%20Perfect%20Paw" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">Donate</a>
           </div>
           <div className="min-w-[130px]">
             <h3 className="m-0 text-[13px] uppercase tracking-widest text-[#0F2A44] font-semibold">Contact</h3>
             <a href="mailto:info@theperfectpaw.org" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">info@theperfectpaw.org</a>
             <a href="tel:+15551234567" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">(555) 123-4567</a>
-            <span className="block mt-3 text-[#7a7b80] text-[15px] leading-snug">123 Rescue Lane</span>
+            <a href="https://www.google.com/maps/search/?api=1&query=123%20Rescue%20Lane" target="_blank" rel="noreferrer" className="block mt-3 text-[#7a7b80] no-underline text-[15px] leading-snug hover:text-[#2f3034]">123 Rescue Lane</a>
           </div>
         </nav>
       </div>

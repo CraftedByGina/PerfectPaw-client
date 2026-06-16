@@ -1,7 +1,80 @@
 import { Link } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 
+const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE_URL = import.meta.env.DEV ? '' : RAW_API_BASE_URL
+
+const joinUrl = (base, path) => {
+  const cleanBase = String(base || '').replace(/\/+$/, '')
+  const cleanPath = String(path || '').replace(/^\/+/, '')
+  return `${cleanBase}/${cleanPath}`
+}
+
+const readApiError = async (response) => {
+  try {
+    const data = await response.json()
+    return data?.message || `Request failed with status ${response.status}`
+  } catch {
+    return `Request failed with status ${response.status}`
+  }
+}
+
+const fetchPets = async () => {
+  const response = await fetch(joinUrl(API_BASE_URL, '/api/pets'))
+
+  if (!response.ok) {
+    throw new Error(await readApiError(response))
+  }
+
+  const data = await response.json()
+  return Array.isArray(data) ? data : data?.pets || data?.data || []
+}
+
+const getPetImage = (pet) => pet.imageUrl || pet.img || '/images/dog.png'
+
+const formatPetAge = (pet) => {
+  const ageMonths = Number(pet.ageMonths || 0)
+
+  if (!ageMonths) return 'Age unknown'
+
+  if (ageMonths < 12) {
+    return `${ageMonths} month${ageMonths === 1 ? '' : 's'}`
+  }
+
+  const years = Math.floor(ageMonths / 12)
+  return `${years} year${years === 1 ? '' : 's'}`
+}
+
+const getRandomPets = (pets) => {
+  const shuffledPets = [...pets].sort(() => Math.random() - 0.5)
+  return shuffledPets.slice(0, 3)
+}
+
 const Home = () => {
+  const [pets, setPets] = useState([])
+  const [loadingPets, setLoadingPets] = useState(true)
+  const [petError, setPetError] = useState('')
+  const petsOfTheWeek = useMemo(() => getRandomPets(pets), [pets])
+
+  useEffect(() => {
+    const loadPets = async () => {
+      try {
+        setPetError('')
+        setLoadingPets(true)
+
+        const data = await fetchPets()
+        setPets(data)
+      } catch (err) {
+        setPetError(err.message || 'Could not load pets of the week.')
+      } finally {
+        setLoadingPets(false)
+      }
+    }
+
+    loadPets()
+  }, [])
+
   return (
     <>
       {/* Top section */}
@@ -54,23 +127,35 @@ const Home = () => {
         <header>
           <h2 className="m-0 mb-[22px] font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">Pets of the Week</h2>
         </header>
+        {loadingPets && (
+          <p className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 text-[#67686d]">
+            Loading pets of the week...
+          </p>
+        )}
+        {!loadingPets && petError && (
+          <p className="rounded-[20px] border border-[#f0b8b8] bg-[#fff4f4] p-5 text-[#9b1c1c]">
+            {petError}
+          </p>
+        )}
+        {!loadingPets && !petError && petsOfTheWeek.length === 0 && (
+          <p className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 text-[#67686d]">
+            No pets are available yet. Seed the backend database to show pets here.
+          </p>
+        )}
         <div className="flex flex-wrap gap-[22px]">
-          {[
-            { name: 'Buddy', age: '2 years', img: '/images/dog.png', blurb: 'Loves fetch, belly rubs, and stealing socks.' },
-            { name: 'Luna', age: '1 year', img: '/images/cat.png', blurb: 'Will judge you silently, then fall asleep on you.' },
-            { name: 'Max', age: '4 years', img: '/images/dog.png', blurb: 'Gentle giant who thinks he\'s a lap dog.' },
-          ].map((pet) => (
+          {petsOfTheWeek.map((pet) => (
             <article key={pet.name} className="pet-card flex-[1_1_300px] rounded-[20px] bg-white overflow-hidden flex flex-col shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:basis-auto">
               <div className="h-[180px] flex items-center justify-center bg-[#efeff0] max-lg:h-[160px]" aria-hidden="true">
-                <img className="w-full h-full object-cover block" src={pet.img} alt="" aria-hidden="true" />
+                <img className="w-full h-full object-cover block" src={getPetImage(pet)} alt="" aria-hidden="true" />
               </div>
               <div className="p-[18px_18px_20px]">
                 <h3 className="m-0 font-serif text-[28px] text-[#0F2A44]">{pet.name}</h3>
+                <p className="mt-1 mb-0 text-[#2e5f8a] text-sm font-semibold">{pet.breed}</p>
                 <p className="mt-[6px] mb-1 text-[#67686d] text-sm italic leading-snug">{pet.blurb}</p>
-                <p className="mt-[6px] mb-4 text-[#6c6d72] text-base">Age: {pet.age}</p>
-                <button className="flex items-center gap-[14px] rounded-lg border-2 border-transparent bg-[#ef767a] px-[14px] py-[9px] text-[14px] font-semibold text-[#f6f6f6] cursor-pointer">
+                <p className="mt-[6px] mb-4 text-[#6c6d72] text-base">Age: {formatPetAge(pet)}</p>
+                <Link to="/pets" className="inline-flex items-center gap-[14px] rounded-lg border-2 border-transparent bg-[#ef767a] px-[14px] py-[9px] text-[14px] font-semibold text-[#f6f6f6] cursor-pointer no-underline">
                   I want to meet {pet.name}!
-                </button>
+                </Link>
               </div>
             </article>
           ))}

@@ -32,6 +32,61 @@ const readApiError = async (response) => {
   }
 }
 
+const getAgeGroupFromMonths = (ageMonths) => {
+  if (ageMonths < 12) return 'Puppy'
+  if (ageMonths < 36) return 'Young'
+  if (ageMonths < 96) return 'Adult'
+  return 'Senior'
+}
+
+const formatPetAge = (pet) => {
+  const ageMonths = Number(pet.ageMonths || (pet.age ? pet.age * 12 : 0))
+
+  if (!ageMonths) return 'Age unknown'
+
+  if (ageMonths < 12) {
+    return `${ageMonths} month${ageMonths === 1 ? '' : 's'}`
+  }
+
+  const years = Math.floor(ageMonths / 12)
+  return `${years} year${years === 1 ? '' : 's'}`
+}
+
+const getPetFormDefaults = () => ({
+  name: '',
+  species: 'Dog',
+  sex: 'Male',
+  ageAmount: '',
+  ageUnit: 'months',
+  size: 'Medium',
+  imageFile: null,
+  traits: '',
+  blurb: '',
+})
+
+const getAgeFormValues = (pet) => {
+  const ageMonths = Number(pet.ageMonths || (pet.age ? pet.age * 12 : 0))
+
+  if (!ageMonths) {
+    return {
+      ageAmount: '',
+      ageUnit: 'months',
+    }
+  }
+
+  if (ageMonths < 12 || ageMonths % 12 !== 0) {
+    return {
+      ageAmount: String(ageMonths),
+      ageUnit: 'months',
+    }
+  }
+
+  return {
+    ageAmount: String(Math.floor(ageMonths / 12)),
+    ageUnit: 'years',
+  }
+}
+
 const ShelterDashboard = () => {
   const navigate = useNavigate()
   const { token, user, shelterId, logout } = useAuth()
@@ -43,24 +98,26 @@ const ShelterDashboard = () => {
   const [processingApplicationId, setProcessingApplicationId] = useState('')
   const [shelter, setShelter] = useState(null)
   const [activeNavItem, setActiveNavItem] = useState('dashboard')
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [showPetForm, setShowPetForm] = useState(false)
   const [creatingPet, setCreatingPet] = useState(false)
-  const [petFormData, setPetFormData] = useState({
-    name: '',
-    species: 'Dog',
-    sex: 'Male',
-    age: '',
-    ageGroup: 'Young',
-    size: 'Medium',
-    imageUrl: '',
-    traits: [],
-    blurb: '',
-  })
+  const [editingPet, setEditingPet] = useState(null)
+  const [deletingPetId, setDeletingPetId] = useState('')
+  const [petFormError, setPetFormError] = useState('')
+  const [petFormData, setPetFormData] = useState(getPetFormDefaults)
+  const [petImagePreviewUrl, setPetImagePreviewUrl] = useState('')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
+  useEffect(() => {
+    if (!petFormData.imageFile) {
+      setPetImagePreviewUrl('')
+      return undefined
+    }
 
+    const objectUrl = URL.createObjectURL(petFormData.imageFile)
+    setPetImagePreviewUrl(objectUrl)
 
-
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [petFormData.imageFile])
 
   useEffect(() => {
     const loadData = async () => {
@@ -147,12 +204,27 @@ const ShelterDashboard = () => {
     application.status === 'reviewing' || application.status === 'pending'
   )).length
   const recentApplications = applications.slice(0, 3)
-  const inventoryPets = pets.slice(0, 4)
+  const applicationsToShow = activeNavItem === 'applications' ? applications : recentApplications
+  const previewPets = pets.slice(0, 3)
+  const petsToShow = activeNavItem === 'pets' ? pets : previewPets
+  const showDashboard = activeNavItem === 'dashboard'
+  const showApplications = activeNavItem === 'dashboard' || activeNavItem === 'applications'
+  const showPetListings = activeNavItem === 'dashboard' || activeNavItem === 'pets'
+  const isEditingPet = Boolean(editingPet)
+  let petSubmitLabel = 'Create Pet'
+
+  if (creatingPet) {
+    petSubmitLabel = isEditingPet ? 'Saving...' : 'Creating...'
+  } else if (isEditingPet) {
+    petSubmitLabel = 'Save Changes'
+  }
+  const petImagePreviewSrc = petImagePreviewUrl || (isEditingPet ? editingPet?.imageUrl || '' : '')
 
   const getApplicationPetName = (application) => application.petId?.name || 'Unknown Pet'
   const getApplicationApplicantName = (application) => application.adopterId?.fullName || 'Unknown Applicant'
   const getPetInitial = (name) => (name || '?').charAt(0).toUpperCase()
   const getPetImage = (pet) => pet.imageUrl || '/images/dog.png'
+  const getPetTraits = (pet) => (Array.isArray(pet.traits) ? pet.traits.filter(Boolean).slice(0, 3) : [])
   const getStatusLabel = (status) => {
     if (status === 'submitted') return 'New'
     if (status === 'reviewing') return 'In Review'
@@ -260,10 +332,207 @@ const ShelterDashboard = () => {
     }
   }
 
+  const handleSavePet = async (event) => {
+    event.preventDefault()
+    setPetFormError('')
+
+    try {
+      setError('')
+      setCreatingPet(true)
+
+      const ageMonths = petFormData.ageUnit === 'years'
+        ? Number(petFormData.ageAmount) * 12
+        : Number(petFormData.ageAmount)
+
+      if (!petFormData.name.trim()) {
+        setPetFormError('Pet name is required.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (!petFormData.ageAmount || Number.isNaN(ageMonths)) {
+        setPetFormError('Enter the pet age.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (petFormData.ageUnit === 'months' && (ageMonths < 1 || ageMonths > 12)) {
+        setPetFormError('Age in months must be between 1 and 12.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (petFormData.ageUnit === 'years' && (Number(petFormData.ageAmount) < 1 || Number(petFormData.ageAmount) > 20)) {
+        setPetFormError('Age in years must be between 1 and 20.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (!isEditingPet && !petFormData.imageFile) {
+        setPetFormError('Upload a pet photo before creating the listing.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (petFormData.imageFile && !petFormData.imageFile.type.startsWith('image/')) {
+        setPetFormError('Uploaded pet photo must be an image file.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (petFormData.imageFile && petFormData.imageFile.size > 5 * 1024 * 1024) {
+        setPetFormError('Uploaded pet photo must be smaller than 5 MB.')
+        setCreatingPet(false)
+        return
+      }
+
+      if (petFormData.blurb.trim() && petFormData.blurb.trim().length < 10) {
+        setPetFormError('Short blurb should be at least 10 characters, or leave it blank.')
+        setCreatingPet(false)
+        return
+      }
+
+      const requestBody = {
+        name: petFormData.name.trim(),
+        species: petFormData.species,
+        sex: petFormData.sex,
+        ageMonths,
+        ageGroup: getAgeGroupFromMonths(ageMonths),
+        size: petFormData.size,
+        traits: petFormData.traits
+          .split(',')
+          .map((trait) => trait.trim())
+          .filter(Boolean),
+        blurb: petFormData.blurb.trim(),
+        status: isEditingPet ? editingPet.status || 'available' : 'available',
+      }
+
+      const formData = new FormData()
+      Object.entries(requestBody).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value))
+          return
+        }
+
+        formData.append(key, value)
+      })
+
+      if (petFormData.imageFile) {
+        formData.append('image', petFormData.imageFile)
+      }
+
+      const url = isEditingPet ? `${API_BASE_URL}/api/pets/${editingPet._id}` : `${API_BASE_URL}/api/pets`
+      const method = isEditingPet ? 'PATCH' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Could not save pet.')
+      }
+
+      if (isEditingPet) {
+        setPets((currentPets) =>
+          currentPets.map((pet) => (pet._id === data.data._id ? data.data : pet))
+        )
+      } else {
+        setPets((currentPets) => [data.data, ...currentPets])
+      }
+
+      setPetFormData(getPetFormDefaults())
+      setEditingPet(null)
+      setShowPetForm(false)
+    } catch (err) {
+      setError(err.message || 'Could not save pet.')
+    } finally {
+      setCreatingPet(false)
+    }
+  }
+
+  const openCreatePetForm = () => {
+    setEditingPet(null)
+    setPetFormData(getPetFormDefaults())
+    setPetFormError('')
+    setShowPetForm(true)
+  }
+
+  const openEditPetForm = (pet) => {
+    const ageValues = getAgeFormValues(pet)
+
+    setEditingPet(pet)
+    setPetFormError('')
+    setPetFormData({
+      name: pet.name || '',
+      species: pet.species || 'Dog',
+      sex: pet.sex || 'Male',
+      ageAmount: ageValues.ageAmount,
+      ageUnit: ageValues.ageUnit,
+      size: pet.size || 'Medium',
+      imageFile: null,
+      traits: Array.isArray(pet.traits) ? pet.traits.join(', ') : '',
+      blurb: pet.blurb || '',
+    })
+    setShowPetForm(true)
+  }
+
+  const closePetForm = () => {
+    if (creatingPet) return
+
+    setShowPetForm(false)
+    setEditingPet(null)
+    setPetFormData(getPetFormDefaults())
+    setPetFormError('')
+  }
+
+  const handleDeletePet = async (pet) => {
+    const confirmed = window.confirm(`Delete ${pet.name}? This cannot be undone.`)
+
+    if (!confirmed) return
+
+    try {
+      setError('')
+      setDeletingPetId(pet._id)
+
+      const response = await fetch(`${API_BASE_URL}/api/pets/${pet._id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(await readApiError(response))
+      }
+
+      setPets((currentPets) => currentPets.filter((currentPet) => currentPet._id !== pet._id))
+    } catch (err) {
+      setError(err.message || 'Could not delete pet.')
+    } finally {
+      setDeletingPetId('')
+    }
+  }
+
+  const handlePetFormChange = (event) => {
+    const { files, name, type, value } = event.target
+
+    setPetFormData((currentData) => ({
+      ...currentData,
+      [name]: type === 'file' ? files?.[0] || null : value,
+    }))
+  }
+
   const handleLogout = () => {
     logout()
     navigate('/login')
   }
+
   if (loading) {
     return (
       <section className="min-h-screen bg-[#EDECEA] px-6 py-8 max-sm:px-4">
@@ -368,7 +637,10 @@ const ShelterDashboard = () => {
                 : 'text-[#55585f] hover:bg-[#ededee]'
                 }`}
               href={href}
-              onClick={() => setActiveNavItem(id)}
+              onClick={(event) => {
+                event.preventDefault()
+                setActiveNavItem(id)
+              }}
             >
               <Icon className="h-5 w-5" />
               {label}
@@ -409,7 +681,8 @@ const ShelterDashboard = () => {
                 <a
                   key={id}
                   href={href}
-                  onClick={() => {
+                  onClick={(event) => {
+                    event.preventDefault()
                     setActiveNavItem(id)
                     setMobileNavOpen(false)
                   }}
@@ -466,69 +739,76 @@ const ShelterDashboard = () => {
             </p>
           )}
 
-          <section id="dashboard-summary" className="flex flex-wrap gap-[22px] scroll-mt-8" aria-label="Dashboard summary">
-            {[
-              { label: 'Total Pets', value: totalPets, tone: 'bg-[#cfe5ff] text-[#0F2A44]' },
-              { label: 'Active Applications', value: activeApplications, tone: 'bg-[#dff2df] text-[#274c2b]' },
-              { label: 'Pending Adoptions', value: pendingAdoptions, tone: 'bg-[#ffdad9] text-[#a23b42]' },
-              { label: 'New Applications', value: newApplications, tone: 'bg-[#fff7eb] text-[#9a5b00]' },
-            ].map((stat) => (
-              <article key={stat.label} className="flex flex-[1_1_240px] items-center gap-4 rounded-[20px] border border-[rgba(15,42,68,0.10)] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:flex-[1_1_100%]">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] text-sm font-bold ${stat.tone}`}>
-                  {stat.label === 'Total Pets' && <PawPrint className="w-6 h-6" />}
-                  {stat.label === 'Active Applications' && <Mail className="w-6 h-6" />}
-                  {stat.label === 'Pending Adoptions' && <HouseHeartIcon className="w-6 h-6" />}
-                  {stat.label === 'New Applications' && <ClipboardList className="w-6 h-6" />}
-                </div>
-                <div>
-                  <p className="m-0 text-[#67686d] text-sm font-semibold">{stat.label}</p>
-                  <p className="m-0 mt-1 text-[32px] font-extrabold leading-none tracking-[-0.02em] text-[#0F2A44]">{stat.value}</p>
-                </div>
-              </article>
-            ))}
-          </section>
-
-          <section className="mt-10 flex items-start gap-[38px] max-lg:flex-col">
-            <aside id="staff-notes" className="flex-[0_0_360px] scroll-mt-8 rounded-[20px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] p-6 max-lg:w-full max-lg:max-w-none max-sm:p-5">
-              <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Today</p>
-              <h2 className="mt-3 mb-0 font-serif text-[34px] text-[#0F2A44]">Staff Notes</h2>
-
-              <div className="mt-5 flex flex-col gap-4">
-                <article className="rounded-[18px] border-l-4 border-[#ef767a] bg-white p-4 shadow-[0_2px_12px_rgba(15,42,68,0.07)]">
-                  <p className="m-0 text-[#0F2A44] font-bold">New applications to review</p>
-                  <p className="mt-1 mb-0 text-sm leading-6 text-[#67686d]">
-                    {newApplications} adopter {newApplications === 1 ? 'message needs' : 'messages need'} a response.
-                  </p>
+          {showDashboard && (
+            <section id="dashboard-summary" className="flex flex-wrap gap-[22px] scroll-mt-8" aria-label="Dashboard summary">
+              {[
+                { label: 'Total Pets', value: totalPets, tone: 'bg-[#cfe5ff] text-[#0F2A44]' },
+                { label: 'Active Applications', value: activeApplications, tone: 'bg-[#dff2df] text-[#274c2b]' },
+                { label: 'Pending Adoptions', value: pendingAdoptions, tone: 'bg-[#ffdad9] text-[#a23b42]' },
+                { label: 'New Applications', value: newApplications, tone: 'bg-[#fff7eb] text-[#9a5b00]' },
+              ].map((stat) => (
+                <article key={stat.label} className="flex flex-[1_1_240px] items-center gap-4 rounded-[20px] border border-[rgba(15,42,68,0.10)] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:flex-[1_1_100%]">
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] text-sm font-bold ${stat.tone}`}>
+                    {stat.label === 'Total Pets' && <PawPrint className="w-6 h-6" />}
+                    {stat.label === 'Active Applications' && <Mail className="w-6 h-6" />}
+                    {stat.label === 'Pending Adoptions' && <HouseHeartIcon className="w-6 h-6" />}
+                    {stat.label === 'New Applications' && <ClipboardList className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <p className="m-0 text-[#67686d] text-sm font-semibold">{stat.label}</p>
+                    <p className="m-0 mt-1 text-[32px] font-extrabold leading-none tracking-[-0.02em] text-[#0F2A44]">{stat.value}</p>
+                  </div>
                 </article>
+              ))}
+            </section>
+          )}
 
-                <article className="rounded-[18px] border-l-4 border-[#2e5f8a] bg-white p-4 shadow-[0_2px_12px_rgba(15,42,68,0.07)]">
-                  <p className="m-0 text-[#0F2A44] font-bold">Approved applications</p>
-                  <p className="mt-1 mb-0 text-sm leading-6 text-[#67686d]">
-                    {approvedApplications} adoption {approvedApplications === 1 ? 'is' : 'are'} ready for the next step.
-                  </p>
-                </article>
-              </div>
-            </aside>
+          {showApplications && (
+            <section className="mt-10 flex items-start gap-[38px] max-lg:flex-col">
+              {showDashboard && (
+                <aside id="staff-notes" className="flex-[0_0_360px] scroll-mt-8 rounded-[20px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] p-6 max-lg:w-full max-lg:max-w-none max-sm:p-5">
+                  <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Today</p>
+                  <h2 className="mt-3 mb-0 font-serif text-[34px] text-[#0F2A44]">Staff Notes</h2>
 
-            <section id="applications" className="flex-1 scroll-mt-8" aria-label="Recent applications">
+                  <div className="mt-5 flex flex-col gap-4">
+                    <article className="rounded-[18px] border-l-4 border-[#ef767a] bg-white p-4 shadow-[0_2px_12px_rgba(15,42,68,0.07)]">
+                      <p className="m-0 text-[#0F2A44] font-bold">New applications to review</p>
+                      <p className="mt-1 mb-0 text-sm leading-6 text-[#67686d]">
+                        {newApplications} adopter {newApplications === 1 ? 'message needs' : 'messages need'} a response.
+                      </p>
+                    </article>
+
+                    <article className="rounded-[18px] border-l-4 border-[#2e5f8a] bg-white p-4 shadow-[0_2px_12px_rgba(15,42,68,0.07)]">
+                      <p className="m-0 text-[#0F2A44] font-bold">Approved applications</p>
+                      <p className="mt-1 mb-0 text-sm leading-6 text-[#67686d]">
+                        {approvedApplications} adoption {approvedApplications === 1 ? 'is' : 'are'} ready for the next step.
+                      </p>
+                    </article>
+                  </div>
+                </aside>
+              )}
+
+              <section id="applications" className="flex-1 scroll-mt-8" aria-label="Recent applications">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Applications</p>
-                  <h2 className="mt-3 mb-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">Recent Applications</h2>
+                  <h2 className="mt-3 mb-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">
+                    {activeNavItem === 'applications' ? 'All Applications' : 'Applications Preview'}
+                  </h2>
                 </div>
                 <p className="m-0 text-[#67686d] text-sm">
-                  Showing {recentApplications.length} of {totalApplications}
+                  Showing {applicationsToShow.length} of {totalApplications}
                 </p>
               </div>
 
               <div className="mt-5 flex flex-col gap-4">
-                {recentApplications.length === 0 && (
+                {applicationsToShow.length === 0 && (
                   <p className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 text-[#67686d]">
                     No recent applications yet.
                   </p>
                 )}
 
-                {recentApplications.map((application) => {
+                {applicationsToShow.map((application) => {
                   const isProcessing = processingApplicationId === application._id
                   const isFinalStatus = ['approved', 'rejected', 'withdrawn'].includes(application.status)
                   const canStartReview = application.status === 'submitted'
@@ -606,62 +886,302 @@ const ShelterDashboard = () => {
                   )
                 })}
               </div>
-            </section>
-          </section>
 
-          <section id="pet-listings" className="mt-11 scroll-mt-8">
+              </section>
+            </section>
+          )}
+
+          {showPetListings && (
+            <section id="pet-listings" className={showDashboard ? 'mt-11 scroll-mt-8' : 'mt-10 scroll-mt-8'}>
             <div className="flex flex-wrap items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
-              <h2 className="m-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">Shelter Inventory</h2>
-              <button 
-              type="button"
-              onClick={() => setShowPetForm(true)}
-              className="rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer max-sm:w-full">
-                Add New Pet
-              </button>
+              <div>
+                <h2 className="m-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">
+                  {activeNavItem === 'pets' ? 'Pet Listings' : 'Pet Listings Preview'}
+                </h2>
+                <p className="mt-2 mb-0 text-[#67686d] text-sm">
+                  Showing {petsToShow.length} of {totalPets}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 max-sm:flex-col">
+                <button
+                  type="button"
+                  onClick={openCreatePetForm}
+                  className="rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer max-sm:w-full"
+                >
+                  Add New Pet
+                </button>
+              </div>
             </div>
 
             <div className="mt-[22px] flex flex-wrap gap-[22px]">
-              {inventoryPets.length === 0 && (
+              {petsToShow.length === 0 && (
                 <p className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 text-[#67686d]">
                   No pets in inventory yet.
                 </p>
               )}
 
-              {inventoryPets.map((pet, index) => (
-                <article
-                  key={pet._id}
-                  className="pet-card flex-[1_1_300px] max-w-[420px] rounded-[20px] bg-white overflow-hidden flex flex-col shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:max-w-none max-sm:flex-[1_1_100%]"
-                  style={{ animation: `fadeUp 0.5s ${index * 0.08}s ease both` }}
-                >
-                  <div className="relative h-[220px] overflow-hidden bg-[#efeff0] max-sm:h-[200px]">
-                    <img
-                      className="pet-card-img h-full w-full object-cover block"
-                      src={getPetImage(pet)}
-                      alt={`Photo of ${pet.name}`}
-                    />
-                    <span className="absolute right-4 top-4 rounded-full bg-[#7DA67D] px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
-                      {pet.status || 'available'}
-                    </span>
-                  </div>
-                  <div className="p-[18px_18px_20px]">
-                    <h3 className="m-0 font-serif text-[28px] text-[#0F2A44]">{pet.name}</h3>
-                    <p className="mt-[6px] mb-1 text-[#67686d] text-sm italic leading-snug">
-                      {pet.blurb || `${pet.species} ready for the right family.`}
-                    </p>
-                    <p className="mt-[6px] mb-4 text-[#6c6d72] text-base">
-                      {pet.age} yr{pet.age === 1 ? '' : 's'} old - {pet.species}
-                    </p>
-                    <button className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[14px] py-[9px] text-[14px] font-semibold text-[#333439] cursor-pointer max-sm:w-full">
-                      Edit Listing
-                    </button>
-                  </div>
-                </article>
-              ))}
+              {petsToShow.map((pet, index) => {
+                const petTraits = getPetTraits(pet)
+
+                return (
+                  <article
+                    key={pet._id}
+                    className="pet-card flex-[1_1_300px] max-w-[420px] rounded-[20px] bg-white overflow-hidden flex flex-col shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:max-w-none max-sm:flex-[1_1_100%]"
+                    style={{ animation: `fadeUp 0.5s ${index * 0.08}s ease both` }}
+                  >
+                    <div className="relative aspect-[18/13] overflow-hidden bg-[#efeff0]">
+                      <img
+                        className="pet-card-img h-full w-full object-cover object-center block"
+                        src={getPetImage(pet)}
+                        alt={`Photo of ${pet.name}`}
+                      />
+                      <span className="absolute right-4 top-4 rounded-full bg-[#7DA67D] px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                        {pet.status || 'available'}
+                      </span>
+                    </div>
+                    <div className="p-[18px_18px_20px]">
+                      <h3 className="m-0 font-serif text-[28px] text-[#0F2A44]">{pet.name}</h3>
+                      <p className="mt-[6px] mb-1 text-[#67686d] text-sm italic leading-snug">
+                        {pet.blurb || `${pet.species} ready for the right family.`}
+                      </p>
+                      <p className="mt-[6px] mb-4 text-[#6c6d72] text-base">
+                        {formatPetAge(pet)} old - {pet.species}
+                      </p>
+                      {petTraits.length > 0 && (
+                        <div className="mb-4 flex flex-wrap gap-2" aria-label="Traits">
+                          {petTraits.map((trait) => (
+                            <span key={trait} className="rounded-lg bg-[#ededee] px-2.5 py-[7px] text-xs font-semibold text-[#6c6d72]">
+                              {trait}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2 max-sm:flex-col">
+                        <button
+                          type="button"
+                          onClick={() => openEditPetForm(pet)}
+                          className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[14px] py-[9px] text-[14px] font-semibold text-[#333439] cursor-pointer max-sm:w-full"
+                        >
+                          Edit Listing
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePet(pet)}
+                          disabled={deletingPetId === pet._id}
+                          className="rounded-lg border border-[#ffdad9] bg-[#fff4f4] px-[14px] py-[9px] text-[14px] font-semibold text-[#ba1a1a] cursor-pointer hover:bg-[#ffdad9] disabled:opacity-60 max-sm:w-full"
+                        >
+                          {deletingPetId === pet._id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
-          </section>
+            </section>
+          )}
         </main>
       </div>
+      {showPetForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8 max-sm:items-end max-sm:px-0 max-sm:py-0">
+          <form
+            onSubmit={handleSavePet}
+            className="flex max-h-[calc(100vh-64px)] w-full max-w-[760px] flex-col overflow-hidden rounded-2xl border border-[#d7d7d9] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.28)] max-sm:max-h-[92vh] max-sm:rounded-b-none"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-[#ececef] p-6 max-sm:p-4">
+              <div>
+                <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
+                  Pet listing
+                </p>
+                <h2 className="mt-2 mb-0 font-serif text-[34px] text-[#0F2A44] max-sm:text-[28px]">
+                  {isEditingPet ? 'Edit Pet Listing' : 'Add New Pet'}
+                </h2>
+                <p className="mt-2 mb-0 text-[#67686d] text-sm leading-6">
+                  {isEditingPet
+                    ? 'Update this listing so adopters see the latest information.'
+                    : 'Fill out the form to create a new pet listing for your shelter.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closePetForm}
+                disabled={creatingPet}
+                className="rounded-full border border-[#d7d7d9] bg-white px-3 py-1 text-lg leading-none text-[#55585f] disabled:opacity-60"
+                aria-label="Close pet form"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="grid gap-5 overflow-y-auto p-6 max-sm:p-4">
+              {petFormError && (
+                <p className="m-0 rounded-lg border border-[#f0b8b8] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
+                  {petFormError}
+                </p>
+              )}
+
+              <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                Name
+                <input
+                  name="name"
+                  type="text"
+                  value={petFormData.name}
+                  onChange={handlePetFormChange}
+                  required
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                />
+              </label>
+
+              <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                Upload pet photo
+                <input
+                  name="imageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePetFormChange}
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none file:mr-3 file:rounded-md file:border-0 file:bg-[#cfe5ff] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[#0F2A44] focus:border-[#0F2A44]"
+                />
+                <span className="text-xs font-normal text-[#67686d]">
+                  {isEditingPet
+                    ? 'Choose a new photo to replace the current one.'
+                    : 'Choose a photo to upload for this pet.'}
+                </span>
+              </label>
+
+              {petImagePreviewSrc && (
+                <img
+                  src={petImagePreviewSrc}
+                  alt="Pet preview"
+                  className="h-48 w-full rounded-xl object-cover"
+                />
+              )}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                  Species
+                  <select
+                    name="species"
+                    value={petFormData.species}
+                    onChange={handlePetFormChange}
+                    required
+                    className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                  >
+                    <option value="Dog">Dog</option>
+                    <option value="Cat">Cat</option>
+                  </select>
+                </label>
+
+                <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                  Sex
+                  <select
+                    name="sex"
+                    value={petFormData.sex}
+                    onChange={handlePetFormChange}
+                    required
+                    className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                  Age
+                  <input
+                    name="ageAmount"
+                    type="number"
+                    min="1"
+                    max={petFormData.ageUnit === 'months' ? '12' : '20'}
+                    step="1"
+                    value={petFormData.ageAmount}
+                    onChange={handlePetFormChange}
+                    required
+                    className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                  />
+                </label>
+
+                <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                  Age unit
+                  <select
+                    name="ageUnit"
+                    value={petFormData.ageUnit}
+                    onChange={handlePetFormChange}
+                    required
+                    className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                  >
+                    <option value="months">months</option>
+                    <option value="years">years</option>
+                  </select>
+                </label>
+
+                <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                  Size
+                  <select
+                    name="size"
+                    value={petFormData.size}
+                    onChange={handlePetFormChange}
+                    required
+                    className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                  >
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                Traits <span className="font-normal text-[#67686d]">(comma separated)</span>
+                <input
+                  name="traits"
+                  type="text"
+                  value={petFormData.traits}
+                  onChange={handlePetFormChange}
+                  placeholder="Friendly, playful, good with cats"
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                />
+              </label>
+
+              <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                Short blurb
+                <textarea
+                  name="blurb"
+                  value={petFormData.blurb}
+                  onChange={handlePetFormChange}
+                  rows={3}
+                  placeholder="Tell adopters what makes this pet special."
+                  className="resize-y rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                />
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-[#ececef] p-6 max-sm:flex-col-reverse max-sm:p-4">
+              <button
+                type="button"
+                onClick={closePetForm}
+                disabled={creatingPet}
+                className="rounded-lg border border-[#c5c6cb] bg-white px-5 py-2.5 text-base font-semibold text-[#2f3034] disabled:opacity-60"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={creatingPet}
+                className="rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer disabled:opacity-60"
+              >
+                {petSubmitLabel}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </section>
   )
 }
 export default ShelterDashboard
+
+

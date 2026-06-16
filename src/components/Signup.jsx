@@ -3,6 +3,17 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Eye, EyeOff } from 'lucide-react'
 
+const isValidEmail = (value) => /\S+@\S+\.\S+/.test(value)
+const isValidUrl = (value) => {
+  if (!value) return true
+
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
+}
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -32,24 +43,87 @@ const Signup = () => {
     event.preventDefault()
     setError('')
     setNotice('')
+
+    const trimmedName = fullName.trim()
+    const trimmedEmail = email.trim()
+    const trimmedShelterName = shelterName.trim()
+    const trimmedPhone = contactPhone.trim()
+    const trimmedCity = city.trim()
+    const trimmedState = state.trim()
+    const trimmedWebsite = website.trim()
+    const trimmedLicenseNumber = licenseNumber.trim()
+    const trimmedMissionStatement = missionStatement.trim()
+
+    if (!trimmedName) {
+      setError('Name is required.')
+      return
+    }
+
+    if (!trimmedEmail || !isValidEmail(trimmedEmail)) {
+      setError('Enter a valid email address.')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
+
+    if (isShelterSignup) {
+      if (!trimmedShelterName) {
+        setError('Shelter name is required.')
+        return
+      }
+
+      if (!trimmedPhone) {
+        setError('Contact phone is required for shelter registration.')
+        return
+      }
+
+      if (!trimmedCity || !trimmedState) {
+        setError('City and state are required for shelter registration.')
+        return
+      }
+
+      if (!trimmedLicenseNumber) {
+        setError('License number is required for shelter registration.')
+        return
+      }
+
+      if (!trimmedMissionStatement) {
+        setError('Mission statement is required for shelter registration.')
+        return
+      }
+
+      if (trimmedWebsite && !isValidUrl(trimmedWebsite)) {
+        setError('Website must be a full URL, like https://example.org.')
+        return
+      }
+
+      if (yearsOperating && Number(yearsOperating) < 0) {
+        setError('Years operating cannot be negative.')
+        return
+      }
+    }
+
     setSaving(true)
 
     try {
       const session = await signup({
-        fullName: fullName.trim(),
-        email: email.trim(),
+        fullName: trimmedName,
+        email: trimmedEmail,
         password,
         role,
-        shelterName: shelterName.trim(),
-        contactPhone: contactPhone.trim(),
+        shelterName: trimmedShelterName,
+        contactPhone: trimmedPhone,
         address: address.trim(),
-        city: city.trim(),
-        state: state.trim(),
+        city: trimmedCity,
+        state: trimmedState,
         zipCode: zipCode.trim(),
-        website: website.trim(),
-        licenseNumber: licenseNumber.trim(),
+        website: trimmedWebsite,
+        licenseNumber: trimmedLicenseNumber,
         yearsOperating: yearsOperating ? Number(yearsOperating) : 0,
-        missionStatement: missionStatement.trim(),
+        missionStatement: trimmedMissionStatement,
       })
 
       if (session?.token) {

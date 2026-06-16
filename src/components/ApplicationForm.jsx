@@ -4,6 +4,8 @@ const API_BASE_URL = import.meta.env.DEV
   ? ''
   : import.meta.env.VITE_API_BASE_URL || ''
 
+const hasMinimumLength = (value, minLength) => value.trim().length >= minLength
+
 const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
     const [formData, setFormData] = useState({
         phone: '',
@@ -20,6 +22,7 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
     })
 
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [error, setError] = useState('')
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -32,6 +35,37 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setError('')
+
+        if (!formData.address.trim()) {
+            setError('Address is required.')
+            return
+        }
+
+        if (!formData.phone.trim()) {
+            setError('Phone number is required.')
+            return
+        }
+
+        if (!formData.city.trim() || !formData.state.trim() || !formData.zipCode.trim()) {
+            setError('City, state, and zip code are required.')
+            return
+        }
+
+        if (!formData.housingType) {
+            setError('Please select your housing type.')
+            return
+        }
+
+        if (!hasMinimumLength(formData.petExperience, 10)) {
+            setError('Pet experience should be at least 10 characters.')
+            return
+        }
+
+        if (!hasMinimumLength(formData.reasonForAdoption, 10)) {
+            setError(`Please share a little more about why you want to adopt ${pet.name}.`)
+            return
+        }
 
         try {
             setIsSubmitting(true)
@@ -57,7 +91,7 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
             onSubmitted(data.data._id || data.data.id)
         } catch (error) {
             console.error(error)
-            alert(error.message)
+            setError(error.message || 'Could not submit application.')
         } finally {
             setIsSubmitting(false)
         }
@@ -255,6 +289,12 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
                     {isSubmitting ? 'Submitting...' : 'Submit Application'}
                 </button>
             </div>
+
+            {error && (
+                <p className="m-0 rounded-lg border border-[#f0b8b8] bg-[#fff4f4] p-3 text-sm text-[#9b1c1c]">
+                    {error}
+                </p>
+            )}
         </form>
     )
 }
