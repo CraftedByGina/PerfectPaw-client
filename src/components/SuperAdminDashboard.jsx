@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useAuth } from '../context/AuthContext.jsx'
 
 const API_BASE_URL = import.meta.env.DEV
@@ -117,12 +118,23 @@ const SuperAdminDashboard = () => {
                             </p>
                         </div>
 
-                        <button
-                            className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer max-sm:w-full"
-                            onClick={logout}
-                        >
-                            Logout
-                        </button>
+                        <div className="flex items-start gap-4 max-sm:w-full max-sm:flex-col">
+                            <div className="w-[220px] max-md:w-[180px] max-sm:mx-auto max-sm:w-[min(230px,70vw)]" aria-hidden="true">
+                                <DotLottieReact
+                                    className="h-auto w-full"
+                                    src="https://lottie.host/22ad055c-6095-4895-b8c0-62282cf7b04a/NOyZGDRUA7.lottie"
+                                    loop
+                                    autoplay
+                                />
+                            </div>
+
+                            <button
+                                className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer max-sm:w-full"
+                                onClick={logout}
+                            >
+                                Logout
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

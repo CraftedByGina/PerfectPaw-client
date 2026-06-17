@@ -272,12 +272,24 @@ const Pets = () => {
     <>
 
 
-      {/* Top Section */}
+      
       <section className="bg-[#f2f2f2] pt-12 pb-9 max-sm:pt-8">
         <div className="w-[min(1200px,calc(100%-96px))] mx-auto flex items-center justify-center gap-4 text-center max-md:flex-col max-sm:w-[calc(100%-32px)]">
           <div className="mx-auto">
             <h1 className="animate-fade-up m-0 font-serif text-[clamp(36px,5vw,66px)] tracking-[-0.02em] text-[#0F2A44]">
-              Meet Your Future Best Friend
+              Meet Your Best{' '}
+              Frien
+              <span className="relative inline-block">
+                d
+                <span className="pointer-events-none absolute left-full bottom-[-0.12em] h-[1.75em] w-[1.75em] -translate-x-[28%] rotate-[8deg]" aria-hidden="true">
+                  <DotLottieReact
+                    className="h-full w-full"
+                    src="https://lottie.host/90089628-88b1-48ca-a160-5d9e0630a2e5/xKtbeouK7G.lottie"
+                    loop
+                    autoplay
+                  />
+                </span>
+              </span>
             </h1>
 
             <p className="animate-fade-up-delay-1 mx-auto mt-[18px] max-w-[760px] text-[#67686d] text-[20px] leading-[1.55] max-sm:text-[17px]">
@@ -285,14 +297,6 @@ const Pets = () => {
             </p>
           </div>
 
-          <div className="w-[220px] max-md:w-[min(260px,70vw)] max-sm:mx-auto max-sm:w-[min(230px,70vw)]" aria-hidden="true">
-            <DotLottieReact
-              className="h-auto w-full"
-              src="https://lottie.host/22ad055c-6095-4895-b8c0-62282cf7b04a/NOyZGDRUA7.lottie"
-              loop
-              autoplay
-            />
-          </div>
         </div>
       </section>
 

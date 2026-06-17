@@ -54,6 +54,7 @@ const formatPetAge = (pet) => {
 
 const getPetFormDefaults = () => ({
   name: '',
+  breed: '',
   species: 'Dog',
   sex: 'Male',
   ageAmount: '',
@@ -394,6 +395,7 @@ const ShelterDashboard = () => {
 
       const requestBody = {
         name: petFormData.name.trim(),
+        breed: petFormData.breed.trim(),
         species: petFormData.species,
         sex: petFormData.sex,
         ageMonths,
@@ -470,6 +472,7 @@ const ShelterDashboard = () => {
     setPetFormError('')
     setPetFormData({
       name: pet.name || '',
+      breed: pet.breed || '',
       species: pet.species || 'Dog',
       sex: pet.sex || 'Male',
       ageAmount: ageValues.ageAmount,
@@ -947,6 +950,11 @@ const ShelterDashboard = () => {
                       <p className="mt-[6px] mb-4 text-[#6c6d72] text-base">
                         {formatPetAge(pet)} old - {pet.species}
                       </p>
+                      {pet.breed && (
+                        <p className="mt-[-10px] mb-4 text-sm font-semibold text-[#2e5f8a]">
+                          {pet.breed}
+                        </p>
+                      )}
                       {petTraits.length > 0 && (
                         <div className="mb-4 flex flex-wrap gap-2" aria-label="Traits">
                           {petTraits.map((trait) => (
@@ -1029,6 +1037,18 @@ const ShelterDashboard = () => {
                   value={petFormData.name}
                   onChange={handlePetFormChange}
                   required
+                  className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                />
+              </label>
+
+              <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                Breed
+                <input
+                  name="breed"
+                  type="text"
+                  value={petFormData.breed}
+                  onChange={handlePetFormChange}
+                  placeholder="Labrador Retriever, Domestic Shorthair"
                   className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
                 />
               </label>

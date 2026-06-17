@@ -31,7 +31,9 @@ const fetchPets = async () => {
   return Array.isArray(data) ? data : data?.pets || data?.data || []
 }
 
-const getPetImage = (pet) => pet.imageUrl || pet.img || '/images/dog.png'
+const getPetImage = (pet) => pet.imageUrl
+
+const getPetId = (pet) => pet._id
 
 const formatPetAge = (pet) => {
   const ageMonths = Number(pet.ageMonths || 0)
@@ -48,7 +50,7 @@ const formatPetAge = (pet) => {
 
 const getRandomPets = (pets) => {
   const shuffledPets = [...pets].sort(() => Math.random() - 0.5)
-  return shuffledPets.slice(0, 3)
+  return shuffledPets.slice(0, 6)
 }
 
 const Home = () => {
@@ -56,6 +58,29 @@ const Home = () => {
   const [loadingPets, setLoadingPets] = useState(true)
   const [petError, setPetError] = useState('')
   const petsOfTheWeek = useMemo(() => getRandomPets(pets), [pets])
+  const [activePetIndex, setActivePetIndex] = useState(0)
+  const activePet = petsOfTheWeek[activePetIndex]
+
+  useEffect(() => {
+    setActivePetIndex(0)
+  }, [petsOfTheWeek.length])
+
+  const showPreviousPet = () => {
+    setActivePetIndex((currentIndex) => {
+      if (currentIndex === 0) return petsOfTheWeek.length - 1
+      return currentIndex - 1
+    })
+  }
+
+  const showNextPet = () => {
+    setActivePetIndex((currentIndex) => {
+      if (currentIndex === petsOfTheWeek.length - 1) return 0
+      return currentIndex + 1
+    })
+  }
+
+
+
 
   useEffect(() => {
     const loadPets = async () => {
@@ -85,14 +110,14 @@ const Home = () => {
             Find Your New Best Friend
           </h1>
           <p className="animate-fade-up-delay-1 mt-[26px] max-w-[540px] text-[#67686d] text-[20px] leading-[1.55] font-light max-lg:text-[18px] max-sm:mt-4">
-          We connect adopters with trusted shelters and rescue partners to help dogs and cats find loving homes.
-          Start your adoption journey with confidence.
+            We connect adopters with trusted shelters and rescue partners to help dogs and cats find loving homes.
+            Start your adoption journey with confidence.
           </p>
           <div className="animate-fade-up-delay-2 mt-7 flex flex-wrap gap-4 max-sm:flex-col">
-            <button className="animate-heartbeat flex items-center justify-center gap-[14px] rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer max-lg:text-[16px] max-sm:w-full max-sm:text-[15px]">
+            <Link to="/pets" className="animate-heartbeat flex items-center justify-center gap-[14px] rounded-lg border-2 border-transparent bg-[#ef767a] px-[18px] py-[10px] text-base font-semibold text-[#f6f6f6] cursor-pointer no-underline max-lg:text-[16px] max-sm:w-full max-sm:text-[15px]">
               Adopt a Pet
               <img className="w-5" src="/icons/heart.svg" alt="" aria-hidden="true" />
-            </button>
+            </Link>
             <button className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer max-lg:text-[16px] max-sm:w-full max-sm:text-[15px]">
               Learn About Adoption
             </button>
@@ -122,11 +147,9 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Pets */}
+
       <section className="w-[min(1500px,calc(100%-96px))] mx-auto mt-11 max-sm:w-[calc(100%-32px)]">
-        <header>
-          <h2 className="m-0 mb-[22px] font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">Pets of the Week</h2>
-        </header>
+
         {loadingPets && (
           <p className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 text-[#67686d]">
             Loading pets of the week...
@@ -142,24 +165,86 @@ const Home = () => {
             No pets are available yet. Seed the backend database to show pets here.
           </p>
         )}
-        <div className="flex flex-wrap gap-[22px]">
-          {petsOfTheWeek.map((pet) => (
-            <article key={pet.name} className="pet-card flex-[1_1_300px] rounded-[20px] bg-white overflow-hidden flex flex-col shadow-[0_2px_12px_rgba(15,42,68,0.07)] max-sm:basis-auto">
-              <div className="h-[180px] flex items-center justify-center bg-[#efeff0] max-lg:h-[160px]" aria-hidden="true">
-                <img className="w-full h-full object-cover block" src={getPetImage(pet)} alt="" aria-hidden="true" />
-              </div>
-              <div className="p-[18px_18px_20px]">
-                <h3 className="m-0 font-serif text-[28px] text-[#0F2A44]">{pet.name}</h3>
-                <p className="mt-1 mb-0 text-[#2e5f8a] text-sm font-semibold">{pet.breed}</p>
-                <p className="mt-[6px] mb-1 text-[#67686d] text-sm italic leading-snug">{pet.blurb}</p>
-                <p className="mt-[6px] mb-4 text-[#6c6d72] text-base">Age: {formatPetAge(pet)}</p>
-                <Link to="/pets" className="inline-flex items-center gap-[14px] rounded-lg border-2 border-transparent bg-[#ef767a] px-[14px] py-[9px] text-[14px] font-semibold text-[#f6f6f6] cursor-pointer no-underline">
-                  I want to meet {pet.name}!
+        {!loadingPets && !petError && activePet && (
+          <div className="mt-6 flex items-center gap-8 max-lg:flex-col">
+            <div className="relative mx-auto h-[500px] w-full max-w-[500px] max-sm:h-[500px]">
+              {petsOfTheWeek.map((pet, index) => {
+                const offset = index - activePetIndex
+                const isActive = index === activePetIndex
+
+                return (
+                  <article
+                    key={getPetId(pet)}
+                    className={`absolute inset-0 overflow-hidden rounded-[28px] bg-white shadow-[0_22px_50px_rgba(15,42,68,0.16)] transition-all duration-500 ${isActive ? 'z-20 opacity-100' : 'z-10 opacity-70'
+                      }`}
+                    style={{
+                      transform: `translateX(${offset * 18}px) rotate(${offset * 4}deg) scale(${isActive ? 1 : 0.92})`,
+                    }}
+                  >
+                    <img
+                      className="h-full w-full object-cover"
+                      src={getPetImage(pet)}
+                      alt={`Photo of ${pet.name}`}
+                    />
+
+                    <div className="absolute inset-x-0 bottom-0 bg-white/65 p-5 backdrop-blur-sm max-sm:p-4">
+                      <h3 className="m-0 font-serif text-[30px] text-[#0F2A44] max-sm:text-[30px]">
+                        {pet.name}
+                      </h3>
+                      <p className="mt-1 mb-0 text-sm font-semibold text-[#2e5f8a]">
+                        {pet.breed}
+                      </p>
+                      <p className="mt-3 mb-0 text-sm italic leading-6 text-[#67686d]">
+                        {pet.blurb}
+                      </p>
+                      <p className="mt-3 mb-0 text-base text-[#6c6d72]">
+                        Age: {formatPetAge(pet)}
+                      </p>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+
+            <div>
+              <h2 className="m-0 font-serif text-[clamp(38px,4vw,58px)] leading-tight text-[#0F2A44]">
+                Pets of the Week
+              </h2>
+              <h3 className="mt-3 mb-0 text-[22px] font-semibold leading-tight text-[#2e5f8a] max-sm:text-[20px]">
+                Meet {activePet.name}
+              </h3>
+
+              <p className="mt-4 mb-0 text-[18px] leading-8 text-[#55585f] max-sm:text-base">
+                Swipe through the pets of the week and choose who's story you'd like to see!
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3 max-sm:flex-col">
+                <button
+                  type="button"
+                  onClick={showPreviousPet}
+                  className="rounded-full border-2 border-[#0F2A44] px-5 py-2.5 text-base font-semibold text-[#0F2A44]"
+                >
+                  Previous
+                </button>
+
+                <button
+                  type="button"
+                  onClick={showNextPet}
+                  className="rounded-full border-2 border-[#0F2A44] px-5 py-2.5 text-base font-semibold text-[#0F2A44]"
+                >
+                  Next
+                </button>
+
+                <Link
+                  to="/pets"
+                  className="rounded-full border-2 border-transparent bg-[#ef767a] px-5 py-2.5 text-center text-base font-semibold text-white no-underline"
+                >
+                  I want to meet {activePet.name}!
                 </Link>
               </div>
-            </article>
-          ))}
-        </div>
+            </div>
+          </div>
+        )}
         <div className="mt-8 flex justify-center">
           <Link
             to="/pets"
@@ -170,7 +255,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Rescue partners */}
+
       <section className="relative w-[min(1500px,calc(100%-96px))] mx-auto mt-10 rounded-[20px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] px-8 py-7 max-sm:w-[calc(100%-32px)] max-sm:px-5 max-sm:py-6">
         <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Rescue partnerships</p>
         <h2 className="mt-3 mb-0 font-serif text-[clamp(30px,2.8vw,42px)] text-[#0F2A44]">Helping More Pets Find Homes</h2>
@@ -194,7 +279,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Steps */}
+
       <section className="mt-[48px] pb-20">
         <div className="w-[min(1500px,calc(100%-96px))] mx-auto max-sm:w-[calc(100%-32px)]">
           <h2 className="mt-[120px] mb-[72px] text-center font-serif text-[clamp(46px,4.4vw,78px)] text-[#0F2A44] max-lg:mt-[72px]">
@@ -219,7 +304,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Course */}
+
       <section className="w-[min(1500px,calc(100%-96px))] mx-auto mt-[34px] bg-[#2e5f8a] rounded-[24px] overflow-hidden flex items-stretch max-lg:flex-col max-sm:w-[calc(100%-32px)] max-sm:mt-5 max-sm:rounded-[20px]">
         <div className="text-[#f4f4f4] flex-[1_1_560px] flex flex-col justify-center px-[58px] py-[58px] max-sm:px-[22px] max-sm:py-[32px]">
           <p className="m-0 text-[#ef767a] text-sm font-semibold uppercase tracking-widest">
