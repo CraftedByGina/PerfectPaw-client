@@ -4,6 +4,7 @@ import Header from './shared/Header.jsx'
 import Footer from './shared/Footer.jsx'
 import Home from './components/Home.jsx'
 import Pets from './components/Pets.jsx'
+import PetMatch from './components/PetMatch.jsx'
 import Course from './components/Course.jsx'
 import Applications from './components/Applications.jsx'
 import Login from './components/Login.jsx'
@@ -13,6 +14,7 @@ import OAuthCallback from './components/OAuthCallback.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 import SuperAdminDashboard from './components/SuperAdminDashboard.jsx'
 import LoadingPage from './components/LoadingPage.jsx'
+
 
 const RequireAuth = ({ children }) => {
   const { isAuthenticated } = useAuth()
@@ -78,6 +80,7 @@ const AppContent = () => {
           <Route path="/" element={<Home />} />
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/pets" element={<Pets />} />
+          <Route path="/pet-match" element={<PetMatch />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />

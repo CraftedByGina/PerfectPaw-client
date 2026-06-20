@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, Link } from 'react-router'
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import ApplicationForm from './ApplicationForm.jsx'
+
 
 const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const API_BASE_URL = import.meta.env.DEV ? '' : RAW_API_BASE_URL
@@ -272,7 +273,7 @@ const Pets = () => {
     <>
 
 
-      
+
       <section className="bg-[#f2f2f2] pt-12 pb-9 max-sm:pt-8">
         <div className="w-[min(1200px,calc(100%-96px))] mx-auto flex items-center justify-center gap-4 text-center max-md:flex-col max-sm:w-[calc(100%-32px)]">
           <div className="mx-auto">
@@ -295,6 +296,12 @@ const Pets = () => {
             <p className="animate-fade-up-delay-1 mx-auto mt-[18px] max-w-[760px] text-[#67686d] text-[20px] leading-[1.55] max-sm:text-[17px]">
               Discover lovable dogs and cats waiting for their forever homes. Use the filters to find a pet that fits your life.
             </p>
+            <Link
+              to="/pet-match"
+              className="mt-6 inline-flex rounded-full bg-[#ef767a] px-6 py-3 font-semibold text-white transition-all hover:brightness-110"
+            >
+              Take the PerfectPaw Match Quiz
+            </Link>
           </div>
 
         </div>
