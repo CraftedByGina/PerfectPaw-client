@@ -6,8 +6,9 @@ import { useAuth } from '../context/AuthContext.jsx'
 const Header = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { isAuthenticated, isShelterAdmin, role, logout } = useAuth()
+  const { isAuthenticated, isShelterAdmin, shelterName, user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const accountLabel = shelterName || user?.fullName || user?.email || 'signed in'
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
@@ -52,7 +53,7 @@ const Header = () => {
             </Link>
           ) : (
             <>
-              <span className="text-sm text-[#55585f] capitalize">{role || 'signed in'}</span>
+              <span className="text-sm text-[#55585f]">{accountLabel}</span>
               <button
                 onClick={handleLogout}
                 className="rounded-lg border-2 border-[#45464a] px-[18px] py-[10px] text-base font-semibold cursor-pointer bg-[#f6f6f7] text-[#333439]"
@@ -108,7 +109,7 @@ const Header = () => {
               </Link>
             ) : (
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-[#55585f] capitalize">{role || 'signed in'}</span>
+                <span className="text-sm text-[#55585f]">{accountLabel}</span>
                 <button
                   onClick={handleLogout}
                   className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-4 py-2.5 text-base font-semibold text-[#333439]"

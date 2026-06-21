@@ -7,6 +7,7 @@ const EMPTY_SESSION = {
   role: '',
   userId: '',
   shelterId: '',
+  shelterName: '',
   user: null,
 }
 
@@ -61,6 +62,7 @@ const getSessionFromStorage = () => {
       role: normalizeRole(saved?.role),
       userId: saved?.userId || '',
       shelterId: saved?.shelterId || '',
+      shelterName: saved?.shelterName || saved?.user?.shelterName || saved?.user?.shelter?.name || '',
       user: saved?.user || null,
     }
   } catch {
@@ -77,6 +79,7 @@ const mapApiPayloadToSession = (payload) => {
     role: normalizeRole(user?.role || root?.role || payload?.role),
     userId: user?._id || user?.id || root?.userId || payload?.userId || '',
     shelterId: user?.shelterId || user?.shelter?._id || root?.shelterId || payload?.shelterId || '',
+    shelterName: user?.shelterName || user?.shelter?.name || root?.shelterName || payload?.shelterName || '',
     user,
   }
 }
@@ -87,6 +90,7 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(initialSession.role)
   const [userId, setUserId] = useState(initialSession.userId)
   const [shelterId, setShelterId] = useState(initialSession.shelterId)
+  const [shelterName, setShelterName] = useState(initialSession.shelterName)
   const [user, setUser] = useState(initialSession.user)
 
   const saveSession = (nextSession) => {
@@ -99,6 +103,7 @@ export const AuthProvider = ({ children }) => {
       role: normalizeRole(nextSession?.role),
       userId: nextSession?.userId || '',
       shelterId: nextSession?.shelterId || '',
+      shelterName: nextSession?.shelterName || nextSession?.user?.shelterName || nextSession?.user?.shelter?.name || '',
       user: nextSession?.user || null,
     }
 
@@ -106,6 +111,7 @@ export const AuthProvider = ({ children }) => {
     setRole(safeSession.role)
     setUserId(safeSession.userId)
     setShelterId(safeSession.shelterId)
+    setShelterName(safeSession.shelterName)
     setUser(safeSession.user)
     saveSession(safeSession)
   }
@@ -115,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     setRole(EMPTY_SESSION.role)
     setUserId(EMPTY_SESSION.userId)
     setShelterId(EMPTY_SESSION.shelterId)
+    setShelterName(EMPTY_SESSION.shelterName)
     setUser(EMPTY_SESSION.user)
     localStorage.removeItem(STORAGE_KEY)
   }
@@ -130,7 +137,7 @@ export const AuthProvider = ({ children }) => {
 
     if (!googleToken) {
       if (token) {
-        return { token, role, userId, shelterId, user }
+        return { token, role, userId, shelterId, shelterName, user }
       }
       throw new Error('No token was returned from Google sign-in.')
     }
@@ -143,8 +150,10 @@ export const AuthProvider = ({ children }) => {
       role: normalizeRole(tokenInfo.role),
       userId: tokenInfo.sub || '',
       shelterId: '',
+      shelterName: '',
       user: {
         _id: tokenInfo.sub,
+        fullName: tokenInfo.fullName || '',
         email: tokenInfo.email,
         role: tokenInfo.role,
       },
@@ -232,6 +241,7 @@ export const AuthProvider = ({ children }) => {
     role,
     userId,
     shelterId,
+    shelterName,
     user,
     isAuthenticated,
     isShelterAdmin,

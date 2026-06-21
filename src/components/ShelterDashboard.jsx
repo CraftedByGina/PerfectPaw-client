@@ -32,6 +32,9 @@ const readApiError = async (response) => {
   }
 }
 
+const MAX_PET_IMAGE_SIZE_MB = 15
+const MAX_PET_IMAGE_SIZE_BYTES = MAX_PET_IMAGE_SIZE_MB * 1024 * 1024
+
 const getAgeGroupFromMonths = (ageMonths) => {
   if (ageMonths < 12) return 'Puppy'
   if (ageMonths < 36) return 'Young'
@@ -407,8 +410,8 @@ const ShelterDashboard = () => {
         return
       }
 
-      if (petFormData.imageFile && petFormData.imageFile.size > 5 * 1024 * 1024) {
-        setPetFormError('Uploaded pet photo must be smaller than 5 MB.')
+      if (petFormData.imageFile && petFormData.imageFile.size > MAX_PET_IMAGE_SIZE_BYTES) {
+        setPetFormError(`Uploaded pet photo must be smaller than ${MAX_PET_IMAGE_SIZE_MB} MB.`)
         setCreatingPet(false)
         return
       }
@@ -1238,11 +1241,13 @@ const ShelterDashboard = () => {
               </label>
 
               {petImagePreviewSrc && (
-                <img
-                  src={petImagePreviewSrc}
-                  alt="Pet preview"
-                  className="h-48 w-full rounded-xl object-cover"
-                />
+                <div className="aspect-[18/13] overflow-hidden rounded-xl bg-[#efeff0]">
+                  <img
+                    src={petImagePreviewSrc}
+                    alt="Pet preview"
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
               )}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

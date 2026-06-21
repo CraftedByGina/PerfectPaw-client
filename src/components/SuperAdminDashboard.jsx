@@ -93,7 +93,7 @@ const SuperAdminDashboard = () => {
         return (
             <section className="min-h-screen bg-[#f5f3f0] px-6 py-10 max-sm:px-4">
                 <div className="w-[min(1500px,calc(100%-96px))] mx-auto max-sm:w-full">
-                    <h1 className="m-0 font-serif text-[clamp(34px,5vw,72px)] text-[#0F2A44]">
+                    <h1 className="m-0 font-serif text-[clamp(24px,3vw,40px)] text-[#0F2A44]">
                         Loading super admin dashboard...
                     </h1>
                 </div>
