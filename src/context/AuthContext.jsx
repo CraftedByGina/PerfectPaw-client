@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 const AuthContext = createContext(null)
 const STORAGE_KEY = 'perfectpaw_auth_session'
@@ -14,6 +14,7 @@ const EMPTY_SESSION = {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const LOGIN_PATH = import.meta.env.VITE_AUTH_LOGIN_PATH || '/api/auth/login'
 const REGISTER_PATH = import.meta.env.VITE_AUTH_REGISTER_PATH || '/api/auth/register'
+const ME_PATH = '/api/auth/me'
 
 const stripTrailingSlashes = (value) => String(value || '').replace(/\/+$/, '')
 const stripLeadingSlashes = (value) => String(value || '').replace(/^\/+/, '')
@@ -130,6 +131,34 @@ export const AuthProvider = ({ children }) => {
     const path = intent === 'signup' ? '/oauth/signup' : '/oauth/login'
     window.location.href = joinUrl(API_BASE_URL, path)
   }
+
+  useEffect(() => {
+    if (!token) return
+
+    const refreshSession = async () => {
+      try {
+        const response = await fetch(joinUrl(API_BASE_URL, ME_PATH), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!response.ok) return
+
+        const payload = await response.json()
+        const refreshedSession = mapApiPayloadToSession({
+          token,
+          user: payload.user,
+        })
+
+        setActiveSession(refreshedSession)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    refreshSession()
+  }, [token])
 
   const finishOAuthLoginFromCallback = async () => {
     const urlParams = new URLSearchParams(window.location.search)
