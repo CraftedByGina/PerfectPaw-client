@@ -230,6 +230,8 @@ const ShelterDashboard = () => {
   const showDashboard = activeNavItem === 'dashboard'
   const showApplications = activeNavItem === 'dashboard' || activeNavItem === 'applications'
   const showPetListings = activeNavItem === 'dashboard' || activeNavItem === 'pets'
+  const showMedicalLogs = activeNavItem === 'medical'
+  const showDailyTasks = activeNavItem === 'tasks'
   const isEditingPet = Boolean(editingPet)
   let petSubmitLabel = 'Create Pet'
 
@@ -307,13 +309,13 @@ const ShelterDashboard = () => {
     {
       id: 'medical',
       label: 'Medical Logs',
-      href: '#staff-notes',
+      href: '#medical-logs',
       Icon: Syringe,
     },
     {
       id: 'tasks',
       label: 'Daily Tasks',
-      href: '#staff-notes',
+      href: '#daily-tasks',
       Icon: ClipboardList,
     },
   ]
@@ -850,6 +852,7 @@ const ShelterDashboard = () => {
                         {approvedApplications} adoption {approvedApplications === 1 ? 'is' : 'are'} ready for the next step.
                       </p>
                     </article>
+
                   </div>
                 </aside>
               )}
@@ -964,6 +967,122 @@ const ShelterDashboard = () => {
               </div>
 
               </section>
+            </section>
+          )}
+
+          {showMedicalLogs && (
+            <section id="medical-logs" className="mt-10 scroll-mt-8" aria-label="Medical logs">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Medical Logs</p>
+                  <h2 className="mt-3 mb-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">
+                    Medical Logs
+                  </h2>
+                  <p className="mt-2 mb-0 max-w-[760px] text-[#67686d] text-base leading-7">
+                    Staff should use this area to track what needs to be logged, what records are missing, and which pets need a vet appointment scheduled or followed up.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-5 lg:grid-cols-3">
+                {[
+                  {
+                    title: 'Records To Update',
+                    pet: pets[0]?.name || 'Bella',
+                    status: 'Needs entry',
+                    items: ['Add intake exam notes from the vet or medical team', 'Enter microchip number, vaccine history, and any prior records received', 'Attach or summarize outside medical records from surrender, transfer, or foster'],
+                  },
+                  {
+                    title: 'Due Dates & Preventive Care',
+                    pet: pets[1]?.name || 'Milo',
+                    status: 'Due soon',
+                    items: ['Track rabies, core vaccine, booster, dewormer, and flea/tick due dates', 'Flag heartworm test, feline combo test, or other diagnostics still needed', 'Mark which items need a staff reminder versus a vet appointment'],
+                  },
+                  {
+                    title: 'Vet Scheduling & Follow-Up',
+                    pet: pets[2]?.name || 'Luna',
+                    status: 'Schedule next',
+                    items: ['Schedule recheck, spay/neuter, dental, wound care, or chronic-condition visit', 'Log prescription name, dose instructions, start date, end date, and refill needs', 'Record vet recommendations after the appointment so the care team knows the next step'],
+                  },
+                ].map((log) => (
+                  <article key={log.title} className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">{log.pet}</p>
+                        <h3 className="mt-2 mb-0 font-serif text-[28px] text-[#0F2A44]">{log.title}</h3>
+                      </div>
+                      <Syringe className="mt-1 h-6 w-6 shrink-0 text-[#7DA67D]" />
+                    </div>
+                    <span className="mt-4 inline-flex rounded-full bg-[#dff2df] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#274c2b]">
+                      {log.status}
+                    </span>
+                    <ul className="mt-4 mb-0 grid gap-2 pl-4 text-sm leading-6 text-[#55585f]">
+                      {log.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {showDailyTasks && (
+            <section id="daily-tasks" className="mt-10 scroll-mt-8" aria-label="Daily tasks">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Daily Tasks</p>
+                  <h2 className="mt-3 mb-0 font-serif text-[clamp(34px,3.2vw,52px)] text-[#0F2A44]">
+                    Daily Care Checklist
+                  </h2>
+                  <p className="mt-2 mb-0 max-w-[760px] text-[#67686d] text-base leading-7">
+                    Staff should complete these rounds each shift so every pet has clean housing, fresh food and water, enrichment, and documented behavior or health changes.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                {[
+                  {
+                    title: 'Opening Rounds',
+                    time: '7:00 AM - 10:00 AM',
+                    items: ['Observe every pet before cleaning for appetite, water intake, urine, stool, attitude, and mobility', 'Refresh food and water according to diet notes; remove spoiled or uneaten food', 'Administer morning medications and report urgent health concerns to the lead or vet team'],
+                  },
+                  {
+                    title: 'Cleaning & Sanitation',
+                    time: '10:00 AM - 12:00 PM',
+                    items: ['Clean and disinfect kennels, cages, litter boxes, dishes, and high-touch surfaces', 'Replace soiled bedding and confirm each enclosure is dry, safe, and labeled', 'Restock food, cleaning supplies, PPE, laundry, and waste stations before the next shift'],
+                  },
+                  {
+                    title: 'Exercise & Enrichment',
+                    time: '12:00 PM - 4:00 PM',
+                    items: ['Log walks, playgroups, quiet-room breaks, or kennel enrichment for each eligible pet', 'Use puzzle feeders, scent work, toys, or hide boxes based on the pet care notes', 'Record stress signals, reactivity, confidence gains, or handling concerns for adoption counseling'],
+                  },
+                  {
+                    title: 'Evening Closeout',
+                    time: '4:00 PM - 7:00 PM',
+                    items: ['Complete evening feeding, water check, medication doses, and final kennel walk-through', 'Update behavior, appetite, elimination, and medical observations before leaving', 'Confirm tomorrow vet appointments, foster pickups, adoption meet-and-greets, and special handling notes'],
+                  },
+                ].map((taskGroup) => (
+                  <article key={taskGroup.title} className="rounded-[20px] border border-[#d7d7d9] bg-white p-5 shadow-[0_2px_12px_rgba(15,42,68,0.07)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="m-0 text-[#9a5b00] text-xs font-semibold uppercase tracking-widest">{taskGroup.time}</p>
+                        <h3 className="mt-2 mb-0 font-serif text-[28px] text-[#0F2A44]">{taskGroup.title}</h3>
+                      </div>
+                      <ClipboardList className="mt-1 h-6 w-6 shrink-0 text-[#9a5b00]" />
+                    </div>
+                    <ul className="mt-4 mb-0 grid gap-3 text-sm leading-6 text-[#55585f]">
+                      {taskGroup.items.map((item) => (
+                        <li key={item} className="flex gap-3">
+                          <span className="mt-1.5 h-3 w-3 shrink-0 rounded border border-[#c5c6cb] bg-white" aria-hidden="true" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
             </section>
           )}
 
