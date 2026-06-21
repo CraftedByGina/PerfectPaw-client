@@ -5,6 +5,7 @@ import Footer from './shared/Footer.jsx'
 import Home from './components/Home.jsx'
 import Pets from './components/Pets.jsx'
 import PetMatch from './components/PetMatch.jsx'
+import PetProfile from './components/PetProfile.jsx'
 import Course from './components/Course.jsx'
 import Applications from './components/Applications.jsx'
 import Login from './components/Login.jsx'
@@ -80,7 +81,15 @@ const AppContent = () => {
           <Route path="/" element={<Home />} />
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/pets" element={<Pets />} />
-          <Route path="/pet-match" element={<PetMatch />} />
+          <Route path="/pets/:petId" element={<PetProfile />} />
+          <Route
+            path="/pet-match"
+            element={(
+              <RequireAdopter>
+                <PetMatch />
+              </RequireAdopter>
+            )}
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
@@ -134,6 +143,7 @@ const AppContent = () => {
 }
 const App = () => {
   const [isLoading, setIsLoading] = useState(true)
+  const isDashboardPath = window.location.pathname.startsWith('/dashboard')
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -143,7 +153,7 @@ const App = () => {
     return () => window.clearTimeout(timerId)
   }, [])
 
-  if (isLoading) {
+  if (isLoading && !isDashboardPath) {
     return <LoadingPage />
   }
 

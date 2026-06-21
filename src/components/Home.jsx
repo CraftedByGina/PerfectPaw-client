@@ -118,9 +118,9 @@ const Home = () => {
               Adopt a Pet
               <img className="w-5" src="/icons/heart.svg" alt="" aria-hidden="true" />
             </Link>
-            <button className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer max-lg:text-[16px] max-sm:w-full max-sm:text-[15px]">
-              Learn About Adoption
-            </button>
+            <a href="#how-adoption-works" className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[18px] py-[10px] text-base font-semibold text-[#333439] cursor-pointer no-underline max-lg:text-[16px] max-sm:w-full max-sm:text-[15px]">
+              See How Adoption Works
+            </a>
           </div>
           <div className="mt-5 w-[min(500px,100%)] max-lg:w-[min(420px,100%)] max-sm:mx-auto max-sm:w-[min(360px,92vw)]" aria-hidden="true">
             <DotLottieReact
@@ -256,48 +256,66 @@ const Home = () => {
       </section>
 
 
-      <section className="relative w-[min(1500px,calc(100%-96px))] mx-auto mt-10 rounded-[20px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] px-8 py-7 max-sm:w-[calc(100%-32px)] max-sm:px-5 max-sm:py-6">
-        <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Rescue partnerships</p>
-        <h2 className="mt-3 mb-0 font-serif text-[clamp(30px,2.8vw,42px)] text-[#0F2A44]">Helping More Pets Find Homes</h2>
-        <div className="mt-4">
-          <p className="mb-0 max-w-[900px] pr-[250px] text-[#55585f] text-[17px] leading-[1.65] max-lg:pr-0">
-            We bring adoptable pets from trusted local rescues like <strong>Lucky Dog Refuge</strong> and <strong>Muddy Paws Rescue</strong>{' '}
-            into one easy-to-browse platform, making it simpler to find your match and connect directly with the rescue caring for them.
-          </p>
-          <div className="absolute right-5 top-1/2 flex -translate-y-1/2 flex-col items-center max-lg:static max-lg:mt-5 max-lg:translate-y-0 max-lg:flex-row max-lg:justify-center" aria-label="Rescue partner badges">
-            <img
-              className="translate-y-10 h-[120px] w-[120px] object-contain max-lg:translate-y-0 max-sm:h-[88px] max-sm:w-[88px]"
-              src="/images/LDR.png"
-              alt="Lucky Dog Refuge logo"
-            />
-            <img
-              className="h-[200px] w-[200px] object-contain max-sm:h-[130px] max-sm:w-[130px]"
-              src="/images/MPR.png"
-              alt="Muddy Paws Rescue logo"
-            />
+      <section className="w-[min(1500px,calc(100%-96px))] mx-auto mt-10 rounded-[24px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] px-8 py-7 max-sm:w-[calc(100%-32px)] max-sm:px-5 max-sm:py-6">
+        <div className="grid items-center gap-8 lg:grid-cols-[1fr_340px]">
+          <div>
+            <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Rescue partnerships</p>
+            <h2 className="mt-3 mb-0 font-serif text-[clamp(30px,2.8vw,42px)] text-[#0F2A44]">Helping More Pets Find Homes</h2>
+            <p className="mt-4 mb-0 max-w-[900px] text-[#55585f] text-[17px] leading-[1.65]">
+              We bring adoptable pets from trusted local rescues like <strong>Lucky Dog Refuge </strong> and <strong>Muddy Paws Rescue</strong> into one easy-to-browse platform, making it simpler to find your match and connect directly with the rescue caring for them.         </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 rounded-[20px] bg-white/70 p-5 max-sm:flex-col" aria-label="Rescue partner links">
+            <a
+              href="https://www.luckydogrefuge.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-[130px] w-[130px] items-center justify-center rounded-2xl border border-[#e3e4e7] bg-white p-3 transition-transform hover:-translate-y-1"
+              aria-label="Visit Lucky Dog Refuge"
+            >
+              <img
+                className="h-full w-full object-contain"
+                src="/images/LDR.png"
+                alt="Lucky Dog Refuge logo"
+              />
+            </a>
+            <a
+              href="https://www.muddypawsrescue.org/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-[130px] w-[130px] items-center justify-center rounded-2xl border border-[#e3e4e7] bg-white p-3 transition-transform hover:-translate-y-1"
+              aria-label="Visit Muddy Paws Rescue"
+            >
+              <img
+                className="h-full w-full object-contain"
+                src="/images/MPR.png"
+                alt="Muddy Paws Rescue logo"
+              />
+            </a>
           </div>
         </div>
       </section>
 
 
-      <section className="mt-[48px] pb-20">
+      <section id="how-adoption-works" className="mt-[48px] scroll-mt-8 pb-20">
         <div className="w-[min(1500px,calc(100%-96px))] mx-auto max-sm:w-[calc(100%-32px)]">
           <h2 className="mt-[120px] mb-[72px] text-center font-serif text-[clamp(46px,4.4vw,78px)] text-[#0F2A44] max-lg:mt-[72px]">
             How Adoption Works
           </h2>
-          <div className="flex flex-wrap gap-6 text-center max-lg:gap-y-11 max-sm:flex-col">
+          <div className="grid grid-cols-5 gap-6 text-center max-xl:grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1">
             {[
-              { num: '01', title: 'Browse Cats and Dogs', desc: 'Find a dog or cat that matches you!' },
-              { num: '02', title: 'Take Course', desc: 'Complete our short adoption education course.' },
-              { num: '03', title: 'Apply', desc: 'Submit your application for review.' },
-              { num: '04', title: 'Meet & Greet', desc: 'Meet your potential new family member.' },
+              { num: '01', title: 'Find a Match', desc: 'Browse pets or take the quiz to find a good fit.' },
+              { num: '02', title: 'View Profile', desc: 'Learn about their personality, needs, and shelter.' },
+              { num: '03', title: 'Apply Online', desc: 'Share your home, experience, and adoption goals.' },
+              { num: '04', title: 'Take Course', desc: 'Complete a short lesson before shelter review.' },
+              { num: '05', title: 'Meet & Greet', desc: 'If approved, connect with the shelter to meet.' },
             ].map((step) => (
-              <article key={step.num} className="flex-[1_1_220px] max-lg:basis-[calc(50%-12px)] max-sm:basis-auto">
+              <article key={step.num} className="flex flex-col items-center">
                 <span className="step-badge-anim w-[68px] aspect-square rounded-[20px] mx-auto flex items-center justify-center bg-[#0F2A44] bg-opacity-90 text-[#f2f2f2] text-lg font-semibold shadow-[0_4px_14px_rgba(15,42,68,0.18)]">
                   {step.num}
                 </span>
-                <h3 className="mt-[18px] mb-0 font-serif text-[30px] text-[#0F2A44]">{step.title}</h3>
-                <p className="mt-[14px] mx-auto max-w-[260px] text-[#67686d] text-lg leading-[1.35]">{step.desc}</p>
+                <h3 className="mt-[18px] mb-0 min-h-[72px] font-serif text-[30px] leading-tight text-[#0F2A44] max-sm:min-h-0">{step.title}</h3>
+                <p className="mt-[14px] mx-auto max-w-[235px] text-[#67686d] text-base leading-[1.45]">{step.desc}</p>
               </article>
             ))}
           </div>
@@ -312,9 +330,7 @@ const Home = () => {
           </p>
           <h2 className="mt-4 mb-0 font-serif text-[clamp(36px,3.6vw,62px)] leading-[1.12]">Adoption Education Course</h2>
           <p className="mt-5 text-[#cbcdd1] text-[18px] leading-[1.6] max-w-[540px]">
-            Preview our free 15-minute course on responsible pet ownership. Your completion
-            is recorded after you apply for a specific pet, so the shelter can review it with
-            that animal's application.
+            Preview our free 15-minute course on responsible pet ownership. Once you apply for a pet and pass the quiz, the shelter will be able to review your results with your application
           </p>
           <Link
             to="/course"
@@ -333,16 +349,40 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Pet insurance */}
-      {/* <section className="w-[min(1500px,calc(100%-96px))] mx-auto mt-7 mb-6 rounded-[20px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] px-8 py-7 max-sm:px-5 max-sm:py-6">
-        <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Pet care planning</p>
-        <h3 className="mt-3 mb-0 font-serif text-[clamp(26px,2.5vw,36px)] text-[#0F2A44]">Why Pet Insurance Matters</h3>
-        <p className="mt-3 mb-0 max-w-[900px] text-[#55585f] text-[17px] leading-[1.65]">
-          Pet insurance helps families handle unexpected vet costs and make health decisions based on care,
-          not price. Even a basic plan can offer peace of mind and support a more secure, lifelong home
-          for your new companion.
-        </p>
-      </section> */}
+      <section className="w-[min(1500px,calc(100%-96px))] mx-auto mt-7 mb-6 overflow-hidden rounded-[28px] border border-[rgba(15,42,68,0.12)] bg-[#f9fbfc] max-sm:w-[calc(100%-32px)]">
+        <div className="grid gap-0 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="bg-white/70 px-8 py-8 max-sm:px-5 max-sm:py-6">
+            <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">Adoption prep</p>
+            <h3 className="mt-3 mb-0 font-serif text-[clamp(30px,3vw,46px)] leading-tight text-[#0F2A44]">Prepare Your Home </h3>
+            <p className="mt-4 mb-0 text-[#55585f] text-[17px] leading-[1.65]">
+              A little preparation goes a long way. These tips can help you create a safe, comfortable, and welcoming space for your new pet.
+            </p>
+          </div>
+
+          <div className="px-8 py-7 max-sm:px-5 max-sm:py-6">
+            <div className="grid gap-5">
+              {[
+                { num: '01', title: 'Find a Veterinarian', desc: 'Choose a trusted veterinarian and schedule a wellness visit shortly after adoption.' },
+                { num: '02', title: 'Create a Comfortable Space', desc: 'Set up food and water bowls, bedding, toys, and a quiet place where your pet can feel safe.' },
+                { num: '03', title: 'Budget for Pet Care', desc: 'Consider pet insurance or an emergency fund before bills are urgent.' },
+              ].map((item, index) => (
+                <article key={item.title} className="relative flex gap-4">
+                  {index < 2 && (
+                    <span className="absolute left-6 top-12 h-[calc(100%+20px)] w-px bg-[#d7d7d9]" aria-hidden="true" />
+                  )}
+                  <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0F2A44] text-sm font-bold text-white">
+                    {item.num}
+                  </span>
+                  <div className="rounded-[22px] bg-white p-4 shadow-[0_4px_18px_rgba(15,42,68,0.06)]">
+                    <h4 className="m-0 font-serif text-[24px] leading-tight text-[#0F2A44]">{item.title}</h4>
+                    <p className="mt-2 mb-0 text-sm leading-6 text-[#67686d]">{item.desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

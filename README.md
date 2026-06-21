@@ -1,35 +1,42 @@
-# HomeForPaws
+# PerfectPaw Client
 
-## Title
-HomeForPaws
+Frontend for PerfectPaw, a pet adoption app where users can browse pets, apply for adoption, sign in, and use a matching quiz to find pets that fit their lifestyle. Shelters can also use the app to manage pet listings and adoption applications.
 
-## Description
-A pet adoption website for browsing adoptable pets and learning how to adopt. 
+## Stack
 
-## Developer Section
-- Tech: Vite
-- Node.js + npm
-- Project goal: a clean, fast pet adoption site (profiles, adoption info, and contact)
+- React
+- Vite
+- React Router
+- Tailwind CSS
+- Lucide React
+- Lottie animations
 
-## Installation
-1. Install dependencies:
-   - `npm install`
+## Features
+
+- Browse adoptable pets
+- Apply for adoption
+- Shelter dashboard for pet listings and applications
+- Pet match quiz
+- Lottie animations for a more interactive UI
+
+## Setup
+
+```bash
+npm install
+```
 
 ## Run
-- Start the dev server:
-  - `npm run dev`
-- Build for production:
-  - `npm run build`
-- Preview the production build:
-  - `npm run preview`
 
-## Usage
-- Open the dev server URL printed in your terminal.
-- Browse the site and update content in `src/` as needed.
+```bash
+npm run dev
+```
 
-## Badges
-![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?logo=vite&logoColor=white)
-![License](https://img.shields.io/badge/License-TBD-lightgrey)
+## Build
 
-## Contributors
--@CraftedByGina
+```bash
+npm run build
+```
+
+## Author
+
+@CraftedByGina

@@ -141,8 +141,11 @@ const Login = () => {
           </p>
         )}
 
-        <p className="mt-5 mb-0 text-sm text-[#67686d]">
-          Need an account? <Link to="/signup" className="text-red-500 font-bold">Register here</Link>
+        <p className="mt-5 mb-0 text-med text-[#67686d]">
+          Don't have an account? <Link to="/signup" className="text-red-500 font-bold">Register here</Link>
+        </p>
+        <p className="mt-2 mb-0 text-sm leading-6 text-[#67686d]">
+          Shelters can register there too. Choose the shelter option when creating your account.
         </p>
       </div>
     </section>

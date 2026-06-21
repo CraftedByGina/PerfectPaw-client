@@ -119,10 +119,10 @@ const SuperAdminDashboard = () => {
                         </div>
 
                         <div className="flex items-start gap-4 max-sm:w-full max-sm:flex-col">
-                            <div className="w-[220px] max-md:w-[180px] max-sm:mx-auto max-sm:w-[min(230px,70vw)]" aria-hidden="true">
+                            <div className="w-[340px] max-md:w-[260px] max-sm:mx-auto max-sm:w-[min(320px,82vw)]" aria-hidden="true">
                                 <DotLottieReact
                                     className="h-auto w-full"
-                                    src="https://lottie.host/22ad055c-6095-4895-b8c0-62282cf7b04a/NOyZGDRUA7.lottie"
+                                    src="https://lottie.host/adf9b492-5df8-4620-8d77-0d6130e8748d/HchvF1OlTo.lottie"
                                     loop
                                     autoplay
                                 />

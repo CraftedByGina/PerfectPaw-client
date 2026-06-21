@@ -38,6 +38,7 @@ const PetMatch = () => {
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [quizError, setQuizError] = useState('')
 
     useEffect(() => {
         const loadPets = async () => {
@@ -54,6 +55,7 @@ const PetMatch = () => {
     }, [])
 
     const updateAnswer = (name, value) => {
+        setQuizError('')
         setAnswers((currentAnswers) => ({
             ...currentAnswers,
             [name]: value,
@@ -61,6 +63,7 @@ const PetMatch = () => {
     }
 
     const toggleArrayAnswer = (name, value) => {
+        setQuizError('')
         setAnswers((currentAnswers) => {
             const currentList = currentAnswers[name]
 
@@ -78,7 +81,38 @@ const PetMatch = () => {
         })
     }
 
+    const getStepError = () => {
+        if (stepIndex === 0 && !answers.homeVibe) {
+            return 'Choose the home vibe that feels most like you.'
+        }
+
+        if (stepIndex === 1 && !answers.weekendStyle) {
+            return 'Choose your ideal weekend style.'
+        }
+
+        if (stepIndex === 2 && answers.hobbies.length === 0) {
+            return 'Pick at least one hobby.'
+        }
+
+        if (stepIndex === 3 && !answers.energyMatch) {
+            return 'Choose the pet energy that feels right.'
+        }
+
+        if (stepIndex === 4 && !answers.hoursAwayFromHome) {
+            return 'Choose how many hours you are usually away from home.'
+        }
+
+        return ''
+    }
+
     const goNext = () => {
+        const message = getStepError()
+
+        if (message) {
+            setQuizError(message)
+            return
+        }
+
         if (stepIndex < quizSteps.length - 1) {
             setStepIndex(stepIndex + 1)
         }
@@ -94,11 +128,20 @@ const PetMatch = () => {
         setAnswers(defaultAnswers)
         setResult(null)
         setError('')
+        setQuizError('')
     }
 
     const handleSubmit = async () => {
+        const message = getStepError()
+
+        if (message) {
+            setQuizError(message)
+            return
+        }
+
         setLoading(true)
         setError('')
+        setQuizError('')
         setResult(null)
 
         try {
@@ -352,36 +395,43 @@ const PetMatch = () => {
                             </div>
                         )}
                         {!result && (
-                            <div className="mt-8 flex flex-wrap justify-between gap-3">
-                                <button
-                                    type="button"
-                                    onClick={goBack}
-                                    disabled={stepIndex === 0 || result}
-                                    className="rounded-full border border-[#d7d7d9] px-6 py-3 font-semibold text-[#67686d] disabled:opacity-40"
-                                >
-                                    Back
-                                </button>
-
-
-                                {stepIndex < quizSteps.length - 1 ? (
-                                    <button
-                                        type="button"
-                                        onClick={goNext}
-                                        className="rounded-full bg-[#2e5f8a] px-6 py-3 font-semibold text-white"
-                                    >
-                                        Next
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={handleSubmit}
-                                        disabled={loading}
-                                        className="rounded-full bg-[#ef767a] px-6 py-3 font-semibold text-white disabled:opacity-60"
-                                    >
-                                        {loading ? 'Finding matches...' : 'Find my matches'}
-                                    </button>
+                            <>
+                                {quizError && (
+                                    <p className="mt-6 rounded-xl border border-[#f3d3a6] bg-[#fff7eb] p-3 text-sm font-semibold text-[#7a5208]">
+                                        {quizError}
+                                    </p>
                                 )}
-                            </div>
+
+                                <div className="mt-8 flex flex-wrap justify-between gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={goBack}
+                                        disabled={stepIndex === 0 || result}
+                                        className="rounded-full border border-[#d7d7d9] px-6 py-3 font-semibold text-[#67686d] disabled:opacity-40"
+                                    >
+                                        Back
+                                    </button>
+
+                                    {stepIndex < quizSteps.length - 1 ? (
+                                        <button
+                                            type="button"
+                                            onClick={goNext}
+                                            className="rounded-full bg-[#2e5f8a] px-6 py-3 font-semibold text-white"
+                                        >
+                                            Next
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={handleSubmit}
+                                            disabled={loading}
+                                            className="rounded-full bg-[#ef767a] px-6 py-3 font-semibold text-white disabled:opacity-60"
+                                        >
+                                            {loading ? 'Finding matches...' : 'Find my matches'}
+                                        </button>
+                                    )}
+                                </div>
+                            </>
                         )}
                     </div>
 
@@ -434,6 +484,13 @@ const PetMatch = () => {
                                         <p className="mt-3 font-semibold text-[#2e5f8a]">
                                             Ideal home: {match.idealHome}
                                         </p>
+
+                                        <Link
+                                            to={`/pets/${match.petId}`}
+                                            className="mt-5 inline-flex rounded-full bg-[#ef767a] px-5 py-3 font-semibold text-white transition-all hover:brightness-110"
+                                        >
+                                            Meet {match.pet.name}
+                                        </Link>
                                     </div>
                                 </article>
                             ))}

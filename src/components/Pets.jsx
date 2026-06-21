@@ -302,6 +302,11 @@ const Pets = () => {
             >
               Take the PerfectPaw Match Quiz
             </Link>
+            {!isAuthenticated && (
+              <p className="mx-auto mt-4 max-w-[560px] rounded-xl border border-[#f3d3a6] bg-[#fff7eb] p-3 text-sm font-semibold text-[#7a5208]">
+                Sign in to take the quiz, save your results, and apply for pets.
+              </p>
+            )}
           </div>
 
         </div>
@@ -312,7 +317,7 @@ const Pets = () => {
         <div className="w-[min(1200px,calc(100%-96px))] mx-auto flex items-start gap-6 max-lg:flex-col max-sm:w-[calc(100%-32px)]">
 
           {/* Sidebar */}
-          <aside className="animate-slide-left sticky top-24 max-h-[calc(100vh-120px)] flex-[0_0_300px] self-start overflow-y-auto rounded-3xl border border-[#d7d7d9] bg-white p-6 shadow-[0_4px_20px_rgba(15,42,68,0.05)] max-lg:static max-lg:max-h-none max-lg:w-full max-lg:max-w-none max-lg:overflow-visible max-sm:p-4" aria-label="Filters">
+          <aside className="animate-slide-left flex-[0_0_300px] self-start rounded-3xl border border-[#d7d7d9] bg-white p-6 shadow-[0_4px_20px_rgba(15,42,68,0.05)] lg:sticky lg:top-6 lg:max-h-[calc(100dvh-48px)] lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-gutter:stable] max-lg:w-full max-lg:max-w-none max-sm:p-4" aria-label="Filters">
             {/* Search */}
             <label className="relative block">
               <svg className="absolute top-1/2 left-3.5 -translate-y-1/2 w-[18px] h-[18px] opacity-60 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -464,10 +469,10 @@ const Pets = () => {
                     onChange={(event) => setSortBy(event.target.value)}
                     className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-sm font-semibold normal-case tracking-normal text-[#2e5f8a] outline-none focus:border-[#2e5f8a]"
                   >
-                    <option value="newest">Newest First</option>
+                    <option value="newest">Recently Added</option>
                     <option value="name">Name A-Z</option>
-                    <option value="age-low">Age: Youngest First</option>
-                    <option value="age-high">Age: Oldest First</option>
+                    <option value="age-low">Young Pets First</option>
+                    <option value="age-high">Senior Pets First</option>
                   </select>
                 </label>
               </div>
@@ -517,9 +522,8 @@ const Pets = () => {
                       <div className="mt-auto pt-6">
                         <button
                           type="button"
-                          onClick={() => handleApply(pet)}
-                          disabled={selectedPet && getPetId(selectedPet) === getPetId(pet)}
-                          className="block w-full rounded-full border-2 border-transparent bg-[#ef767a] px-4 py-3 text-center text-base font-semibold text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-60"
+                          onClick={() => navigate(`/pets/${getPetId(pet)}`)}
+                          className="block w-full rounded-full border-2 border-transparent bg-[#ef767a] px-4 py-3 text-center text-base font-semibold text-white transition-all hover:brightness-110 active:scale-95"
                         >
                           {`I'm interested in ${getPetName(pet)}!`}
                         </button>

@@ -60,6 +60,11 @@ const getPetFormDefaults = () => ({
   ageAmount: '',
   ageUnit: 'months',
   size: 'Medium',
+  energyLevel: 'Medium',
+  goodForApartments: 'unknown',
+  goodWithKids: 'unknown',
+  goodWithOtherPets: 'unknown',
+  exerciseNeeds: 'Moderate',
   imageFile: null,
   traits: '',
   blurb: '',
@@ -107,6 +112,7 @@ const ShelterDashboard = () => {
   const [petFormData, setPetFormData] = useState(getPetFormDefaults)
   const [petImagePreviewUrl, setPetImagePreviewUrl] = useState('')
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [selectedApplication, setSelectedApplication] = useState(null)
 
   useEffect(() => {
     if (!petFormData.imageFile) {
@@ -226,6 +232,15 @@ const ShelterDashboard = () => {
   const getPetInitial = (name) => (name || '?').charAt(0).toUpperCase()
   const getPetImage = (pet) => pet.imageUrl || '/images/dog.png'
   const getPetTraits = (pet) => (Array.isArray(pet.traits) ? pet.traits.filter(Boolean).slice(0, 3) : [])
+  const formatYesNo = (value) => (value ? 'Yes' : 'No')
+  const getApplicationAddress = (application) => (
+    [
+      application.address,
+      application.city,
+      application.state,
+      application.zipCode,
+    ].filter(Boolean).join(', ') || 'Not provided'
+  )
   const getStatusLabel = (status) => {
     if (status === 'submitted') return 'New'
     if (status === 'reviewing') return 'In Review'
@@ -326,6 +341,17 @@ const ShelterDashboard = () => {
           }
         })
       )
+      setSelectedApplication((currentApplication) => {
+        if (!currentApplication || currentApplication._id !== applicationId) {
+          return currentApplication
+        }
+
+        return {
+          ...currentApplication,
+          status: updatedApplication.status,
+          courseStatus: updatedApplication.courseStatus,
+        }
+      })
     } catch (err) {
       setError(err.message || 'Could not update application.')
     } finally {
@@ -401,6 +427,11 @@ const ShelterDashboard = () => {
         ageMonths,
         ageGroup: getAgeGroupFromMonths(ageMonths),
         size: petFormData.size,
+        energyLevel: petFormData.energyLevel,
+        goodForApartments: petFormData.goodForApartments,
+        goodWithKids: petFormData.goodWithKids,
+        goodWithOtherPets: petFormData.goodWithOtherPets,
+        exerciseNeeds: petFormData.exerciseNeeds,
         traits: petFormData.traits
           .split(',')
           .map((trait) => trait.trim())
@@ -478,6 +509,11 @@ const ShelterDashboard = () => {
       ageAmount: ageValues.ageAmount,
       ageUnit: ageValues.ageUnit,
       size: pet.size || 'Medium',
+      energyLevel: pet.energyLevel || 'Medium',
+      goodForApartments: pet.goodForApartments || 'unknown',
+      goodWithKids: pet.goodWithKids || 'unknown',
+      goodWithOtherPets: pet.goodWithOtherPets || 'unknown',
+      exerciseNeeds: pet.exerciseNeeds || 'Moderate',
       imageFile: null,
       traits: Array.isArray(pet.traits) ? pet.traits.join(', ') : '',
       blurb: pet.blurb || '',
@@ -536,11 +572,25 @@ const ShelterDashboard = () => {
     navigate('/login')
   }
 
+  const selectedApplicationIsProcessing = selectedApplication && processingApplicationId === selectedApplication._id
+  const selectedApplicationIsFinal = selectedApplication && ['approved', 'rejected', 'withdrawn'].includes(selectedApplication.status)
+  const selectedApplicationCanStartReview = selectedApplication?.status === 'submitted'
+  const selectedApplicationCanApprove = selectedApplication && !selectedApplicationIsFinal && selectedApplication.courseStatus === 'passed'
+  const selectedApplicationCanReject = selectedApplication && !selectedApplicationIsFinal
+
   if (loading) {
     return (
-      <section className="min-h-screen bg-[#EDECEA] px-6 py-8 max-sm:px-4">
-        <div className="mx-auto max-w-7xl"></div>
-        <h1 className="text-2xl font-bold">Loading dashboard...</h1>
+      <section className="flex min-h-screen items-center justify-center bg-[#f5f3f0] px-6 py-12">
+        <div className="w-[min(340px,76vw)] text-center">
+          <DotLottieReact
+            src="https://lottie.host/800b5304-413b-4ae4-bd51-4d057ec4e6e0/WmITjU5Fgi.lottie"
+            loop
+            autoplay
+          />
+          <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#2e5f8a]">
+            Loading your dashboard
+          </p>
+        </div>
       </section>
     )
   }
@@ -556,12 +606,12 @@ const ShelterDashboard = () => {
             Your application is pending review
           </h1>
           <p className="mt-4 text-[#67686d] text-lg leading-7 max-sm:text-base">
-            Thanks for registering {shelter.name}. A Perfect Paw admin needs to approve your shelter before you can add pets or manage applications.
+            Thanks for registering {shelter.name}. A Perfect Paw Administrator needs to approve your shelter before you have access to this platform.
           </p>
           <div className="mt-6 rounded-lg bg-[#fff7eb] border border-[#f3d3a6] p-4 text-[#7a5208]">
             <p className="m-0 font-semibold">What happens next?</p>
             <p className="mt-2 mb-0">
-              We’ll review your organization details. Once approved, signing in will take you to your shelter dashboard.
+               You will receive an email once your shelter is approved. Once approved, signing in will take you to your shelter dashboard.
             </p>
           </div>
           <div className="mt-6 flex flex-wrap gap-3 max-sm:flex-col">
@@ -851,6 +901,16 @@ const ShelterDashboard = () => {
                           {application.reasonForAdoption || application.message}
                         </p>
                       )}
+                      <div className="mt-5">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedApplication(application)}
+                          className="inline-flex items-center gap-2 rounded-lg border-2 border-[#45464a] bg-white px-[14px] py-[9px] text-[14px] font-semibold text-[#333439] cursor-pointer"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View Application
+                        </button>
+                      </div>
                       {!isFinalStatus && (
                         <div className="mt-5 flex flex-wrap gap-3 max-sm:flex-col">
                           {canStartReview && (
@@ -990,6 +1050,114 @@ const ShelterDashboard = () => {
           )}
         </main>
       </div>
+      {selectedApplication && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8 max-sm:items-end max-sm:px-0 max-sm:py-0"
+          aria-modal="true"
+          aria-label="Application details"
+        >
+          <div className="max-h-[calc(100vh-64px)] w-full max-w-[860px] overflow-y-auto rounded-2xl border border-[#d7d7d9] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.28)] max-sm:max-h-[92vh] max-sm:rounded-b-none">
+            <div className="flex items-start justify-between gap-4 border-b border-[#ececef] p-6 max-sm:p-4">
+              <div>
+                <p className="m-0 text-[#2e5f8a] text-xs font-semibold uppercase tracking-widest">
+                  Application Details
+                </p>
+                <h2 className="mt-2 mb-0 font-serif text-[34px] leading-tight text-[#0F2A44] max-sm:text-[28px]">
+                  {getApplicationPetName(selectedApplication)}
+                </h2>
+                <p className="mt-2 mb-0 text-sm text-[#67686d]">
+                  Submitted by {getApplicationApplicantName(selectedApplication)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedApplication(null)}
+                className="rounded-full border border-[#d7d7d9] bg-white px-3 py-1 text-lg leading-none text-[#55585f]"
+                aria-label="Close application details"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="grid gap-5 p-6 max-sm:p-4">
+              <div className="flex flex-wrap gap-2">
+                <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${getStatusClass(selectedApplication.status)}`}>
+                  {getStatusLabel(selectedApplication.status)}
+                </span>
+                <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${getCourseStatusClass(selectedApplication.courseStatus)}`}>
+                  {getCourseStatusLabel(selectedApplication.courseStatus)}
+                </span>
+              </div>
+
+              <section className="grid gap-3 rounded-[16px] bg-[#f6f6f7] p-4">
+                <h3 className="m-0 font-serif text-[24px] text-[#0F2A44]">Applicant</h3>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Name:</strong> {getApplicationApplicantName(selectedApplication)}</p>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Email:</strong> {selectedApplication.adopterId?.email || 'Not provided'}</p>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Phone:</strong> {selectedApplication.phone || 'Not provided'}</p>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Address:</strong> {getApplicationAddress(selectedApplication)}</p>
+              </section>
+
+              <section className="grid gap-3 rounded-[16px] bg-[#f6f6f7] p-4">
+                <h3 className="m-0 font-serif text-[24px] text-[#0F2A44]">Home Details</h3>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Housing:</strong> {selectedApplication.housingType || 'Not provided'}</p>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Has yard:</strong> {formatYesNo(selectedApplication.hasYard)}</p>
+                <p className="m-0 text-sm text-[#55585f]"><strong>Has other pets:</strong> {formatYesNo(selectedApplication.hasOtherPets)}</p>
+              </section>
+
+              <section className="grid gap-3 rounded-[16px] bg-[#f6f6f7] p-4">
+                <h3 className="m-0 font-serif text-[24px] text-[#0F2A44]">Application Answers</h3>
+                <div>
+                  <p className="m-0 text-sm font-semibold text-[#0F2A44]">Pet experience</p>
+                  <p className="mt-1 mb-0 text-sm leading-6 text-[#55585f]">{selectedApplication.petExperience || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="m-0 text-sm font-semibold text-[#0F2A44]">Why they want to adopt</p>
+                  <p className="mt-1 mb-0 text-sm leading-6 text-[#55585f]">{selectedApplication.reasonForAdoption || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="m-0 text-sm font-semibold text-[#0F2A44]">Message</p>
+                  <p className="mt-1 mb-0 text-sm leading-6 text-[#55585f]">{selectedApplication.message || 'No extra message provided.'}</p>
+                </div>
+              </section>
+            </div>
+
+            {!selectedApplicationIsFinal && (
+              <div className="flex flex-wrap justify-end gap-3 border-t border-[#ececef] p-6 max-sm:flex-col-reverse max-sm:p-4">
+                {selectedApplicationCanStartReview && (
+                  <button
+                    type="button"
+                    disabled={selectedApplicationIsProcessing}
+                    onClick={() => handleReviewApplication(selectedApplication._id, 'reviewing')}
+                    className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[14px] py-[9px] text-[14px] font-semibold text-[#333439] cursor-pointer disabled:opacity-60"
+                  >
+                    {selectedApplicationIsProcessing ? 'Updating...' : 'Start Review'}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  disabled={selectedApplicationIsProcessing || !selectedApplicationCanApprove}
+                  onClick={() => handleReviewApplication(selectedApplication._id, 'approved')}
+                  className="rounded-lg border-2 border-transparent bg-[#ef767a] px-[14px] py-[9px] text-[14px] font-semibold text-[#f6f6f6] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Approve
+                </button>
+
+                {selectedApplicationCanReject && (
+                  <button
+                    type="button"
+                    disabled={selectedApplicationIsProcessing}
+                    onClick={() => handleReviewApplication(selectedApplication._id, 'rejected')}
+                    className="rounded-lg border-2 border-[#45464a] bg-[#f6f6f7] px-[14px] py-[9px] text-[14px] font-semibold text-[#333439] cursor-pointer disabled:opacity-60"
+                  >
+                    Reject
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {showPetForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-8 max-sm:items-end max-sm:px-0 max-sm:py-0">
           <form
@@ -1151,6 +1319,94 @@ const ShelterDashboard = () => {
                     <option value="Large">Large</option>
                   </select>
                 </label>
+              </div>
+
+              <div className="grid gap-3 rounded-2xl border border-[#ececef] bg-[#fafafa] p-4">
+                <div>
+                  <p className="m-0 text-sm font-bold text-[#0F2A44]">Match details</p>
+                  <p className="m-0 mt-1 text-sm text-[#67686d]">
+                    These help the quiz recommend the right pets to adopters.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                    Energy level
+                    <select
+                      name="energyLevel"
+                      value={petFormData.energyLevel}
+                      onChange={handlePetFormChange}
+                      required
+                      className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                    Exercise needs
+                    <select
+                      name="exerciseNeeds"
+                      value={petFormData.exerciseNeeds}
+                      onChange={handlePetFormChange}
+                      required
+                      className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Moderate">Moderate</option>
+                      <option value="High">High</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                    Apartment friendly
+                    <select
+                      name="goodForApartments"
+                      value={petFormData.goodForApartments}
+                      onChange={handlePetFormChange}
+                      required
+                      className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                    >
+                      <option value="unknown">Unknown</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                    Good with kids
+                    <select
+                      name="goodWithKids"
+                      value={petFormData.goodWithKids}
+                      onChange={handlePetFormChange}
+                      required
+                      className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                    >
+                      <option value="unknown">Unknown</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </label>
+
+                  <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">
+                    Good with other pets
+                    <select
+                      name="goodWithOtherPets"
+                      value={petFormData.goodWithOtherPets}
+                      onChange={handlePetFormChange}
+                      required
+                      className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
+                    >
+                      <option value="unknown">Unknown</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </label>
+                </div>
               </div>
 
               <label className="grid gap-1.5 text-sm font-medium text-[#2f3034]">

@@ -49,6 +49,25 @@ const getCourseStatusClass = (courseStatus) => {
 const getPetImage = (application) => application.petId?.imageUrl || '/images/dog.png'
 const getPetName = (application) => application.petId?.name || 'Unknown pet'
 const getShelterName = (application) => application.shelterId?.name || 'Shelter review team'
+const getApplicationMessage = (application) => {
+  if (application.status === 'approved') {
+    return 'Good news. The shelter approved your application and should contact you with next steps.'
+  }
+
+  if (application.status === 'rejected') {
+    return 'The shelter reviewed your application and decided not to move forward with this match.'
+  }
+
+  if (application.courseStatus === 'passed') {
+    return 'Your course is complete. The shelter can now review your application and will update you when there is a decision.'
+  }
+
+  if (application.courseStatus === 'failed') {
+    return 'Review the course and retake the quiz so the shelter can continue reviewing your application.'
+  }
+
+  return 'Complete the adoption course so the shelter can review your application.'
+}
 
 const Applications = () => {
   const { token } = useAuth()
@@ -158,9 +177,7 @@ const Applications = () => {
                   </div>
 
                   <p className="mt-4 mb-0 rounded-[14px] bg-[#f6f6f7] p-3 text-sm leading-6 text-[#55585f]">
-                    {application.status === 'approved'
-                      ? 'Good news. The shelter approved your application and should contact you with next steps.'
-                      : 'The shelter can review your application after your course is passed.'}
+                    {getApplicationMessage(application)}
                   </p>
 
                   {courseNeedsAttention && (

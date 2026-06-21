@@ -5,6 +5,20 @@ const API_BASE_URL = import.meta.env.DEV
   : import.meta.env.VITE_API_BASE_URL || ''
 
 const hasMinimumLength = (value, minLength) => value.trim().length >= minLength
+const formatPhoneNumber = (value) => {
+    let phoneNumber = value.replace(/[^0-9]/g, '')
+    phoneNumber = phoneNumber.slice(0, 10)
+
+    if (phoneNumber.length <= 3) {
+        return phoneNumber
+    }
+
+    if (phoneNumber.length <= 6) {
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`
+    }
+
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`
+}
 
 const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
     const [formData, setFormData] = useState({
@@ -26,10 +40,15 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
+        let newValue = value
+
+        if (name === 'phone') {
+            newValue = formatPhoneNumber(value)
+        }
 
         setFormData((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: type === 'checkbox' ? checked : newValue,
         }))
     }
 
@@ -44,6 +63,13 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
 
         if (!formData.phone.trim()) {
             setError('Phone number is required.')
+            return
+        }
+
+        const phoneDigits = formData.phone.replace(/[^0-9]/g, '')
+
+        if (phoneDigits.length !== 10) {
+            setError('Enter a 10-digit phone number.')
             return
         }
 
@@ -142,6 +168,8 @@ const ApplicationForm = ({ pet, token, onCancel, onSubmitted }) => {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
+                        placeholder="(555) 123-4567"
+                        maxLength="14"
                         required
                         className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2 text-base outline-none focus:border-[#0F2A44]"
                     />

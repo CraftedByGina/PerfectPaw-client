@@ -180,6 +180,11 @@ const Course = () => {
 		setSaveMessage('')
 	}
 
+	const reviewCourseAndTryAgain = () => {
+		resetQuiz()
+		setPageIndex(0)
+	}
+
 	const handleSubmit = async () => {
 		setSaveError('')
 		setSaveMessage('')
@@ -211,8 +216,10 @@ const Course = () => {
 			})
 
 			const savedCourseStatus = response?.data?.courseStatus
-			if (savedCourseStatus) {
-				setSaveMessage(`Course result saved: ${savedCourseStatus}.`)
+			if (savedCourseStatus === 'passed') {
+				setSaveMessage('Your passing result was saved and sent to the shelter.')
+			} else if (savedCourseStatus === 'failed') {
+				setSaveMessage('Your result was saved. Review the course and try again when you are ready.')
 			} else {
 				setSaveMessage('Course result saved.')
 			}
@@ -242,16 +249,20 @@ const Course = () => {
 				<h1 className="mt-3 mb-0 font-serif text-[clamp(36px,4vw,62px)] leading-[1.1] text-[#0F2A44]">
 					Pet Care Basics
 				</h1>
-				<p className="mt-4 mb-0 max-w-[760px] text-[#55585f] text-[18px] leading-[1.6] max-sm:text-[16px]">
-					This guided course is open for learning at any time. To record completion for an adoption, start from a specific pet application so the result attaches to that animal.
-				</p>
+				<div className="mt-5 max-w-[820px] rounded-[16px] border border-[#cfe5ff] bg-[#f7fbff] p-4 text-[#0F2A44]">
+					<p className="m-0 text-sm font-bold uppercase tracking-wider text-[#2e5f8a]">
+						Please Read Carefully:
+					</p>
+					<p className="mt-2 mb-0 text-[17px] leading-7 max-sm:text-[16px]">
+						You can take this course anytime. To apply for a pet, you must pass the quiz. Once you pass, your results will be shared with the shelter so they can review your application.	</p>
+				</div>
 			</header>
 
 			{!hasApplicationContext && (
 				<div className="mb-6 rounded-[16px] border border-[#f3d3a6] bg-[#fff7eb] p-4 text-[#7a5208]">
 					<p className="m-0 text-sm font-semibold uppercase tracking-wider">Preview mode</p>
 					<p className="mt-2 mb-0 text-[16px] leading-6">
-						You can read the course here, but quiz completion will not count toward an adoption until you apply for a specific pet.
+						You're viewing the course in preview mode. To use it for adoption, apply for a pet and complete the quiz.
 					</p>
 					<Link
 						to="/pets"
@@ -333,13 +344,15 @@ const Course = () => {
 						>
 							{saving ? 'Saving...' : 'Submit for application'}
 						</button>
-						<button
-							type="button"
-							onClick={resetQuiz}
-							className="rounded-lg border border-[#c5c6cb] bg-transparent px-5 py-2.5 text-base text-[#2f3034]"
-						>
-							Reset quiz
-						</button>
+						{!submitted && (
+							<button
+								type="button"
+								onClick={resetQuiz}
+								className="rounded-lg border border-[#c5c6cb] bg-transparent px-5 py-2.5 text-base text-[#2f3034]"
+							>
+								Clear answers
+							</button>
+						)}
 					</div>
 
 					{saveError && (
@@ -355,19 +368,34 @@ const Course = () => {
 					)}
 
 					{submitted && (
-						<div className="mt-5 rounded-lg border border-[#d7d7d9] bg-white p-4">
-							<p className="m-0 text-[#0F2A44] text-lg font-semibold">Your score: {score} / {QUIZ.length}</p>
-							<p className="mt-2 mb-0 text-[#55585f]">
-								{passed
-									? 'Great job. You passed this course section and are ready for the next adoption step.'
-									: 'Please review the lesson pages and try again. You are close.'}
+						<div className="mt-5 rounded-[16px] border border-[#d7d7d9] bg-white p-5">
+							<p className="m-0 text-sm font-bold uppercase tracking-wider text-[#ef767a]">
+								What happens next
 							</p>
-							<Link
-								to="/pets"
-								className="inline-flex mt-4 rounded-lg border-2 border-[#0F2A44] px-5 py-2.5 text-[#0F2A44] no-underline font-semibold"
-							>
-								Continue to pets
-							</Link>
+							<p className="mt-2 mb-0 text-[#0F2A44] text-xl font-semibold">
+								Your score: {score} / {QUIZ.length}
+							</p>
+							<p className="mt-3 mb-0 text-[#55585f] leading-6">
+								{passed
+									? 'You passed. Your course result is saved to this application. The shelter can now review your full application and update you with their decision.'
+									: "We're sorry, you didn't pass this time. Your result was saved, but the shelter needs a passing course result before they can finish reviewing your application. Review the course, then try the quiz again."}
+							</p>
+							{passed ? (
+								<Link
+									to="/applications"
+									className="mt-5 inline-flex rounded-lg border-2 border-transparent bg-[#ef767a] px-5 py-2.5 text-base font-semibold text-white no-underline"
+								>
+									View my application
+								</Link>
+							) : (
+								<button
+									type="button"
+									onClick={reviewCourseAndTryAgain}
+									className="mt-5 rounded-lg border-2 border-[#0F2A44] bg-white px-5 py-2.5 text-base font-semibold text-[#0F2A44]"
+								>
+									Review course and try again
+								</button>
+							)}
 						</div>
 					)}
 				</section>
@@ -393,7 +421,7 @@ const Course = () => {
 			</div>
 
 			<p className="mt-6 mb-0 text-sm text-[#7a7c84]">
-				Course topics and quiz themes were based on commonly recommended pet-care practices from veterinary and animal welfare guidance.
+				Course topics and quiz themes were based on commonly recommended pet-care practices from veterinary and animal welfare organizations.
 			</p>
 		</section>
 	)

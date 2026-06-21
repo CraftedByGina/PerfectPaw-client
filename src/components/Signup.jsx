@@ -15,6 +15,21 @@ const isValidUrl = (value) => {
   }
 }
 
+const formatPhoneNumber = (value) => {
+  let phoneNumber = value.replace(/[^0-9]/g, '')
+  phoneNumber = phoneNumber.slice(0, 10)
+
+  if (phoneNumber.length <= 3) {
+    return phoneNumber
+  }
+
+  if (phoneNumber.length <= 6) {
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`
+  }
+
+  return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`
+}
+
 const Signup = () => {
   const navigate = useNavigate()
   const { signup, startOAuthLogin } = useAuth()
@@ -77,6 +92,13 @@ const Signup = () => {
 
       if (!trimmedPhone) {
         setError('Contact phone is required for shelter registration.')
+        return
+      }
+
+      const phoneDigits = trimmedPhone.replace(/[^0-9]/g, '')
+
+      if (phoneDigits.length !== 10) {
+        setError('Enter a 10-digit shelter phone number.')
         return
       }
 
@@ -264,7 +286,9 @@ const Signup = () => {
                 <input
                   type="tel"
                   value={contactPhone}
-                  onChange={(event) => setContactPhone(event.target.value)}
+                  onChange={(event) => setContactPhone(formatPhoneNumber(event.target.value))}
+                  placeholder="(555) 123-4567"
+                  maxLength="14"
                   required={isShelterSignup}
                   className="rounded-lg border border-[#d7d7d9] bg-white px-3 py-2"
                 />
@@ -372,7 +396,7 @@ const Signup = () => {
           </p>
         )}
 
-        <p className="mt-6 mb-0 text-sm text-[#67686d]">
+        <p className="mt-6 mb-0 text-med text-[#67686d]">
           Already have an account? <Link to="/login" className="text-red-500 font-bold">Sign In</Link>
         </p>
       </div>
