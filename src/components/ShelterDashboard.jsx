@@ -32,7 +32,17 @@ const readApiError = async (response) => {
   }
 }
 
-const MAX_PET_IMAGE_SIZE_MB = 30
+const readSavePetError = async (response) => {
+  const message = await readApiError(response)
+
+  if (response.status === 500) {
+    return `${message}. Check Render logs and Cloudinary upload configuration.`
+  }
+
+  return message
+}
+
+const MAX_PET_IMAGE_SIZE_MB = 10
 const MAX_PET_IMAGE_SIZE_BYTES = MAX_PET_IMAGE_SIZE_MB * 1024 * 1024
 
 const getAgeGroupFromMonths = (ageMonths) => {
@@ -468,11 +478,11 @@ const ShelterDashboard = () => {
         body: formData,
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(data.message || 'Could not save pet.')
+        throw new Error(await readSavePetError(response))
       }
+
+      const data = await response.json()
 
       if (isEditingPet) {
         setPets((currentPets) =>
