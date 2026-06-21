@@ -32,7 +32,7 @@ const readApiError = async (response) => {
   }
 }
 
-const MAX_PET_IMAGE_SIZE_MB = 15
+const MAX_PET_IMAGE_SIZE_MB = 30
 const MAX_PET_IMAGE_SIZE_BYTES = MAX_PET_IMAGE_SIZE_MB * 1024 * 1024
 
 const getAgeGroupFromMonths = (ageMonths) => {
@@ -1241,7 +1241,7 @@ const ShelterDashboard = () => {
               </label>
 
               {petImagePreviewSrc && (
-                <div className="aspect-[18/13] overflow-hidden rounded-xl bg-[#efeff0]">
+                <div className="h-[220px] w-full max-w-[420px] overflow-hidden rounded-xl border border-[#d7d7d9] bg-[#efeff0]">
                   <img
                     src={petImagePreviewSrc}
                     alt="Pet preview"
